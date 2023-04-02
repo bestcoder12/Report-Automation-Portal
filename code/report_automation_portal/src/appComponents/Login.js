@@ -15,20 +15,26 @@ export const Login = () => {
     return (
     <>
         <h1 style={{textAlign: "center"}}>Report Automation Portal</h1>
-        <div id='login-cards'>
-            <p>Enter the details login</p>
-            <form action="" onSubmit={checkCred}>
-                <div>
-                    <label htmlFor="username">Username</label>
-                    <input type="text" name="username" id="username" value={username} onChange={(e)=>setUsername(e.target.value)} />
-                </div>
-                <div>
-                    <label htmlFor="password">Password</label>
-                    <input type={showPassword?"text":"password"} name="passwrd" id="passwrd" value={passwrd} onChange={(e)=>setPasswrd(e.target.value)} />
-                </div>
-                <div><input type="checkbox" onClick={togglePassword} />Show Password</div>
-                <button id="login-button" type="submit">Login</button>
-            </form>
+        <div className='container'>
+            <div className='wrapper'>
+                <div id='login-heading'>Login</div>
+                <form action="" onSubmit={checkCred}>
+                    <div className='login-row'>
+                        <label htmlFor="username">Username</label>
+                        <div className='login-username'>
+                            <input type="text" name="username" id="username" value={username} onChange={(e)=>setUsername(e.target.value)} />
+                        </div>
+                    </div>
+                    <div className='login-row'>
+                        <label htmlFor="password">Password</label>
+                        <div className='login-passwd'>
+                            <input type={showPassword?"text":"password"} name="passwrd" id="passwrd" value={passwrd} onChange={(e)=>setPasswrd(e.target.value)} />
+                        </div>
+                    </div>
+                    <div className='login-chk'><input type="checkbox" onClick={togglePassword} />Show Password</div>
+                    <button id="login-button" type="submit">Log in</button>
+                </form>
+            </div>
         </div>
     </>
   )

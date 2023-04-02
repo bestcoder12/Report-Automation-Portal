@@ -5,7 +5,7 @@ import {
 } from "react-router-dom";
 import './App.css';
 import { Login } from './appComponents/Login';
-import { Home } from './appComponents/Home';
+import { Dashboard } from './appComponents/Dashboard';
 import { AddReport } from './appComponents/AddReport';
 import { EditReport } from './appComponents/EditReport';
 import { ManageUsers } from './appComponents/ManageUsers';
@@ -19,7 +19,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />}>
           </Route>
-          <Route path="/" element={<Home />}>
+          <Route path="/dashboard" element={<Dashboard />}>
           </Route>
           <Route path="/addReport" element={<AddReport />}>
           </Route>

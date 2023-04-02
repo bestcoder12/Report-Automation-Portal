@@ -48,58 +48,34 @@ export const SideBar = () => {
 
   return (
     <>
-    <IconContext.Provider value={{ color: "#fff" }}>
-      <Nav>
-            <NavIcon to="#">
-              <FaIcons.FaBars id="toggle-bars" onClick={toggleSidebar} />
-            </NavIcon>
-            <h1
-              style={{ textAlign: "center",
-                      marginLeft: "200px",
-                      color: "white" }}
-            >
-              Report Automation Portal
-            </h1>
-      </Nav>
-      <SidebarNav sidebar={sidebar}>
-          <SidebarWrap>
-            <NavIcon to="#">
-              <AiIcons.AiOutlineClose onClick={toggleSidebar} />
-            </NavIcon>
-            {/* SidebarContent.map((item, index) => {
-              return <SubMenu item={item} key={index} />;
-            }) */
-                SidebarContent.map((menuOption)=>{
-                  return <SideBarProcess menuopt={menuOption} />
-                })
-            }
-          </SidebarWrap>
-        </SidebarNav>
-    </IconContext.Provider>
-    {/* <div>
-    <nav>
-      <ul>
-        <li>
-          <Link to="/">Home</Link>
-        </li>
-        <li>
-          <Link to="/addReport">Add Report</Link>
-        </li>
-        <li>
-          <Link to="/editReports">Edit Reports</Link>
-        </li>
-        <li>
-          <Link to="/manageUsers">Manage Users</Link>
-        </li>
-        <li>
-          <Link to="/changePassword">Change Password</Link>
-        </li>
-        <li>
-          <Link to="/logout">Logout</Link>
-        </li>
-      </ul>
-    </nav>
-    </div> */}
+      <IconContext.Provider value={{ color: "#fff" }}>
+        <Nav>
+              <NavIcon to="#">
+                <FaIcons.FaBars id="toggle-bars" onClick={toggleSidebar} />
+              </NavIcon>
+              <h1
+                style={{ textAlign: "center",
+                        marginLeft: "200px",
+                        color: "white" }}
+              >
+                Report Automation Portal
+              </h1>
+        </Nav>
+        <SidebarNav sidebar={sidebar}>
+            <SidebarWrap>
+              <NavIcon to="#">
+                <AiIcons.AiOutlineClose onClick={toggleSidebar} />
+              </NavIcon>
+              {/* SidebarContent.map((item, index) => {
+                return <SubMenu item={item} key={index} />;
+              }) */
+                  SidebarContent.map((menuOption)=>{
+                    return <SideBarProcess menuopt={menuOption} />
+                  })
+              }
+            </SidebarWrap>
+          </SidebarNav>
+      </IconContext.Provider>
     </>
   )
 }

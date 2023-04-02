@@ -1,31 +1,79 @@
-#login-cards
-{
-    padding: 25vh
+body {
+    overflow: hidden;
+    background-color: azure;
 }
 
-form 
-{
-    border: 3px solid lightslategray;
-    padding: 5vh
+.container {
+    max-width: 28%;
+    padding: 0 4%;
+    margin: 16vh auto;
+    display: grid;
+}
+
+
+.wrapper {
+    width: 50vh;
+    height: 55vh;
+    border-radius: 1em;
+    position: relative;
+    box-shadow: 0.4vh 0vh 2vh 0.2vh lightblue;
+}
+
+form { 
+    padding: 5%;
+    height: 20vh;
+    width: 16vh;
+    /* display: table; */
 }
   
-input[type=text], input[type=password] 
-{
-    width: 50%;
-    padding: 12px 20px;
-    margin: 8px 6px;
-    display: inline-block;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
+.wrapper #login-heading {
+    height: 2em;
+    background: linear-gradient(to bottom right, darkblue, lightblue);
+    border-radius: 1.6vh 1.6vh 0 0;
+    flex-direction: column;
+    color: white;
+    font-size: 2em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Set a style for all buttons */
-login-button 
-{
-    background-color: green;
+.login-row {
+    height: 4vh;
+    margin-bottom: 7vh;
+    position: relative;
+    /* display: table-cell; */
+}
+
+/* .login-username {
+    height: 100%;
+    width: 100%;
+    outline: none;
+    padding-left: 60px; 
+    border-radius: 5px;
+    border: 1px solid lightblue; 
+    font-size: 16px;
+    transition: all 0.3s ease;
+    
+} */
+
+input[type=text], input[type=password] {
+    width: 100%;
+    padding: 1vh 2vh;
+    margin: 0.8vh 0.6vh;
+    display: inline-block;
+    border: 0.2vh solid #ccc;
+    box-sizing: border-box;
+    border-radius: 0.4vh;
+}
+
+
+#login-button {
+    background-color: #00ace6;
     color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
+    padding: 1.4vh 2vh;
+    margin: 0.8vh 0;
     border: none;
     cursor: pointer;
     width: 100%;
@@ -34,9 +82,6 @@ login-button
 
 /* Add a hover effect for buttons */
 button:hover {
-opacity: 0.8;
+    opacity: 0.8;
 }
 
-.container {
-padding: 16px;
-}
