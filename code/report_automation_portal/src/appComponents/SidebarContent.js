@@ -6,8 +6,8 @@ import * as MdIcons from "react-icons/md";
 
 export const SidebarContent = [
         {
-          title: "Home",
-          path: "/",
+          title: "Dashboard",
+          path: "/dashboard",
           icon: <AiIcons.AiFillHome />
         },
         {

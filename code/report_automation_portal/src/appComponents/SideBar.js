@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import styled from "styled-components";
 import * as FaIcons from "react-icons/fa";
 import * as AiIcons from "react-icons/ai";
 import { SidebarContent } from "./SidebarContent";
@@ -7,65 +6,37 @@ import { IconContext } from 'react-icons';
 import { Link } from 'react-router-dom';
 import { SideBarProcess } from './SideBarProcess';
 
-const Nav = styled.div`
-  background: lightslategray;
-  height: 80px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-`;
-
-const NavIcon = styled(Link)`
-  margin-left: 2rem;
-  font-size: 2rem;
-  height: 80px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-`;
-
-const SidebarNav = styled.nav`
-  background: lightslategray;
-  width: 250px;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  position: fixed;
-  top: 0;
-  left: ${({ sidebar }) => (sidebar ? "0" : "-100%")};
-  transition: 350ms;
-  z-index: 10;
-`;
-
-const SidebarWrap = styled.div`
-  width: 100%;
-`;
-
 export const SideBar = () => {
 
-  const [sidebar, setSidebar] = useState(false);
-  const toggleSidebar = () => {setSidebar(!sidebar)};
+  const [sidebar, setSidebar] = useState("false");
+
+  const toggleSidebar = () => {
+    setSidebar(!sidebar)    
+    let sidebarNav = document.getElementById('sidebar-nav');
+    sidebar ? sidebarNav.style.left = '0' : sidebarNav.style.left = '-100%'
+  };
+
 
   return (
     <>
       <IconContext.Provider value={{ color: "#fff" }}>
-        <Nav>
-              <NavIcon to="#">
+        <nav id='page-nav'>
+              <Link to="#" id='sidebar-icon'>
                 <FaIcons.FaBars id="toggle-bars" onClick={toggleSidebar} />
-              </NavIcon>
+              </Link>
               <h1
                 style={{ textAlign: "center",
-                        marginLeft: "200px",
+                        marginLeft: "65vh",
                         color: "white" }}
               >
                 Report Automation Portal
               </h1>
-        </Nav>
-        <SidebarNav sidebar={sidebar}>
-            <SidebarWrap>
-              <NavIcon to="#">
+        </nav>
+        <nav id='sidebar-nav' sidebar={sidebar}>
+            <div id='sidebar-wrap'>
+              <Link to="#" id='sidebar-icon'>
                 <AiIcons.AiOutlineClose onClick={toggleSidebar} />
-              </NavIcon>
+              </Link>
               {/* SidebarContent.map((item, index) => {
                 return <SubMenu item={item} key={index} />;
               }) */
@@ -73,8 +44,8 @@ export const SideBar = () => {
                     return <SideBarProcess menuopt={menuOption} />
                   })
               }
-            </SidebarWrap>
-          </SidebarNav>
+            </div>
+          </nav>
       </IconContext.Provider>
     </>
   )
