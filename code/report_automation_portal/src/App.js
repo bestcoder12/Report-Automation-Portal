@@ -4,13 +4,13 @@ import {
   Route
 } from "react-router-dom";
 import './App.css';
-import { Login } from './appComponents/Login';
-import { Dashboard } from './appComponents/Dashboard';
-import { AddReport } from './appComponents/AddReport';
-import { EditReport } from './appComponents/EditReport';
-import { ManageUsers } from './appComponents/ManageUsers';
-import { ChangePassword } from './appComponents/ChangePassword';
-import { Logout } from './appComponents/Logout';
+import { Login } from './Components/Login';
+import { Dashboard } from './Components/Dashboard';
+import { AddReport } from './Components/AddReport';
+import { EditReport } from './Components/EditReport';
+import { ManageUsers } from './Components/ManageUsers';
+import { ChangePassword } from './Components/ChangePassword';
+import { Logout } from './Components/Logout';
 
 function App() {
   return (
