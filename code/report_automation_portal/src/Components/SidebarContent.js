@@ -8,12 +8,12 @@ export const SidebarContent = [
         {
           title: "Dashboard",
           path: "/dashboard",
-          icon: <AiIcons.AiFillHome />
+          icon: <AiIcons.AiFillHome />,
         },
         {
           title: "Add Report",
           path: "/addReport",
-          icon: <HiIcons.HiDocumentArrowUp /> 
+          icon: <HiIcons.HiDocumentArrowUp />,
         },
         {
           title: "Edit Report",
@@ -23,12 +23,12 @@ export const SidebarContent = [
         {
           title: "Manage Users",
           path: "/manageUsers",
-          icon: <FaIcons.FaUsersCog />
+          icon: <FaIcons.FaUsersCog />,
         },
         {
           title: "Change Password",
           path: "/changePassword",
-          icon: <MdIcons.MdPassword />
+          icon: <MdIcons.MdPassword />,
         },
         {
           title: "Logout",

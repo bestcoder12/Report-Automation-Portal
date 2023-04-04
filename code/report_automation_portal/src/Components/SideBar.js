@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import * as FaIcons from "react-icons/fa";
 import * as AiIcons from "react-icons/ai";
-import { SidebarContent } from "./SidebarContent";
 import { IconContext } from 'react-icons';
 import { Link } from 'react-router-dom';
+import { SidebarContent } from "./SidebarContent";
 import { SideBarProcess } from './SideBarProcess';
 
 export const SideBar = () => {
 
-  const [sidebar, setSidebar] = useState(0);
+  const [sidebar, setSidebar] = useState(toString(0));
 
   const toggleSidebar = () => {
     setSidebar(!sidebar)    
@@ -22,7 +22,7 @@ export const SideBar = () => {
       <IconContext.Provider value={{ color: "#fff" }}>
         <nav id='page-nav'>
               <Link to="#" id='sidebar-icon'>
-                <FaIcons.FaBars id="toggle-bars" onClick={toggleSidebar} />
+                <FaIcons.FaBars id="toggle-bars" data-testid='hamIcon' onClick={toggleSidebar} />
               </Link>
               <h1
                 style={{ textAlign: "center",
@@ -35,13 +35,13 @@ export const SideBar = () => {
         <nav id='sidebar-nav' sidebar={sidebar}>
             <div id='sidebar-wrap'>
               <Link to="#" id='sidebar-icon'>
-                <AiIcons.AiOutlineClose onClick={toggleSidebar} />
+                <AiIcons.AiOutlineClose data-testid="close-icon" onClick={toggleSidebar} />
               </Link>
               {/* SidebarContent.map((item, index) => {
                 return <SubMenu item={item} key={index} />;
               }) */
                   SidebarContent.map((menuOption)=>{
-                    return <SideBarProcess menuopt={menuOption} />
+                    return <SideBarProcess menuopt={menuOption} key={menuOption.title}/>
                   })
               }
             </div>

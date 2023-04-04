@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SideBar } from './SideBar';
 import Calendar from 'react-calendar';
-import '/node_modules/react-calendar/dist/Calendar.css';
+import '../../node_modules/react-calendar/dist/Calendar.css';
 
 
 export const AddReport = () => {
