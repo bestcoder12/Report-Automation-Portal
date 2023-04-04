@@ -26,7 +26,7 @@ export const Login = () => {
                         </div>
                     </div>
                     <div className='login-row'>
-                        <label htmlFor="password">Password</label>
+                        <label htmlFor="passwrd">Password</label>
                         <div className='login-passwd'>
                             <input type={showPassword?"text":"password"} name="passwrd" id="passwrd" value={passwrd} onChange={(e)=>setPasswrd(e.target.value)} />
                         </div>

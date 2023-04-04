@@ -8,7 +8,7 @@ import { SideBarProcess } from './SideBarProcess';
 
 export const SideBar = () => {
 
-  const [sidebar, setSidebar] = useState("false");
+  const [sidebar, setSidebar] = useState(0);
 
   const toggleSidebar = () => {
     setSidebar(!sidebar)    
