@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { Login } from '../Login' 
+import userEvent from '@testing-library/user-event';
+import { Login } from '../Login';
 
 describe('Render Login form elements', () => { 
 
@@ -33,8 +34,9 @@ describe('Input for username and password', () => {
     test('should be able to input username', async () => { 
         const user = userEvent.setup()
         render(<Login />)
-        const usernameElement = await screen.findByLabelText(/username/i)
-        
+        const usernameElement = screen.findByLabelText(/username/i)
+        userEvent.type(usernameElement, 'testuser')
+        expect(usernameElement).toHaveValue('testuser')
      });
 })
 
