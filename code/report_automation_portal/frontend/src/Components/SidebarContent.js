@@ -6,14 +6,14 @@ import * as MdIcons from "react-icons/md";
 
 export const SidebarContent = [
         {
-          title: "Home",
-          path: "/",
-          icon: <AiIcons.AiFillHome />
+          title: "Dashboard",
+          path: "/dashboard",
+          icon: <AiIcons.AiFillHome />,
         },
         {
           title: "Add Report",
           path: "/addReport",
-          icon: <HiIcons.HiDocumentArrowUp /> 
+          icon: <HiIcons.HiDocumentArrowUp />,
         },
         {
           title: "Edit Report",
@@ -23,12 +23,12 @@ export const SidebarContent = [
         {
           title: "Manage Users",
           path: "/manageUsers",
-          icon: <FaIcons.FaUsersCog />
+          icon: <FaIcons.FaUsersCog />,
         },
         {
           title: "Change Password",
           path: "/changePassword",
-          icon: <MdIcons.MdPassword />
+          icon: <MdIcons.MdPassword />,
         },
         {
           title: "Logout",
