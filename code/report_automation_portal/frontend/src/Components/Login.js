@@ -18,7 +18,7 @@ export const Login = () => {
         <div className='container'>
             <div className='wrapper'>
                 <div id='login-heading'>Login</div>
-                <form action="" onSubmit={checkCred}>
+                <form action="" method='POST' onSubmit={checkCred}>
                     <div className='login-row'>
                         <label htmlFor="username">Username</label>
                         <div className='login-username'>
