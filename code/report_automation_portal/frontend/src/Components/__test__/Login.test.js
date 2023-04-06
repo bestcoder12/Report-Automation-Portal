@@ -73,7 +73,12 @@ describe('Show password functionality', () => {
     });
  })
 
-/* test('should make password visible after clicking on checkbox',
- async () => { 
+describe('Login authentication', () => { 
+    
+    
+    
+    test('Username and password sent to database', async () => { 
 
-  }) */
+    });
+
+ })
