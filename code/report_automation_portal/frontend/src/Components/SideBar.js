@@ -6,6 +6,11 @@ import { Link } from 'react-router-dom';
 import { SidebarContent } from "./SidebarContent";
 import { SideBarProcess } from './SideBarProcess';
 
+/*
+  Most probably the reason SideBar.test.js fails
+  could be because Sidebar content is not taken as a prop rather as a json
+*/ 
+
 export const SideBar = () => {
 
   const [sidebar, setSidebar] = useState(toString(0));
@@ -41,7 +46,7 @@ export const SideBar = () => {
                 return <SubMenu item={item} key={index} />;
               }) */
                   SidebarContent.map((menuOption)=>{
-                    return <SideBarProcess menuopt={menuOption} key={menuOption.title}/>
+                    return <SideBarProcess key={menuOption.title} menuopt={menuOption} />
                   })
               }
             </div>
