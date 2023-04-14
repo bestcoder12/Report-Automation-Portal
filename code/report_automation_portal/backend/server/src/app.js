@@ -30,7 +30,7 @@ const makeApp = async (userFunc) => {
       if (passHash === undefined) {
         // User may not exist or typo in username
         console.log(
-          `The user ${req.body.username} being queried doesn"t exist.`
+          `The user ${req.body.username} being queried doesn't exist.`
         );
         res
           .status(404)
@@ -108,27 +108,32 @@ const makeApp = async (userFunc) => {
     let updtMesg = { '': '' };
     // if ((await userFunc.getUserType(req.session.user)).toLowerCase() == "admin") {
     if (userFunc.chkAdmin(req.body.username)) {
-      if (
+      /*  if (
         req.body.username !== req.session.user &&
         !userFunc.chkAdmin(req.body.username)
-      ) {
-        [updtSts, updtMesg] = await userFunc.modUserByAdmin(
-          req.body.username,
-          req.body.password,
-          req.body.usertype,
-          req.body.userrole
-        );
-      } else {
+      ) { */
+      [updtSts, updtMesg] = await userFunc.modUserByAdmin(
+        req.body.username,
+        req.body.password,
+        req.body.usertype,
+        req.body.userrole
+      );
+      /* }
+      else {
         updtMesg = { message: 'The change to other user is not allowed.' };
-      }
-      if (req.body.username === req.session.user) {
-        [updtSts, updtMesg] = await userFunc.modUserByRegular(
-          req.body.username,
-          req.body.password
-        );
-      } else {
-        updtMesg = { message: 'Could not perform operation' };
-      }
+      } */
+      // if (req.body.username === req.session.user) {
+    }
+    if (
+      (await userFunc.getUserType(req.body.username)).toLowerCase() ===
+      'regular'
+    ) {
+      [updtSts, updtMesg] = await userFunc.modUserByRegular(
+        req.body.username,
+        req.body.password
+      );
+    } else {
+      updtMesg = { message: 'Could not perform operation' };
     }
     res.status(updtSts).json(updtMesg);
   });

@@ -12,13 +12,16 @@ jest.spyOn(userFunc, 'chkAdmin');
 jest.spyOn(userFunc, 'getUserType');
 jest.spyOn(userFunc, 'getUserDetails');
 jest.spyOn(userFunc, 'getPassHash');
-userFunc.addUser.mockImplementation(async (uname, passwrd, utype, urole) => {
+jest.spyOn(userFunc, 'modUserByAdmin');
+jest.spyOn(userFunc, 'modUserByRegular');
+jest.spyOn(userFunc, 'checkUserExists');
+userFunc.addUser.mockImplementation(async (uname, passwd, utype, urole) => {
   if (
     !!uname &&
-    !!passwrd &&
+    !!passwd &&
     !!utype &&
     !!urole &&
-    userFunc.chkPassStrngth(passwrd, 1)
+    userFunc.chkPassStrngth(passwd, 1)
   )
     return [200, { message: 'User added successfully.' }];
 
@@ -54,6 +57,47 @@ userFunc.getPassHash.mockImplementation(async (uname) => {
     if (uname === uObj.username) retVal = uObj.corrHash;
   });
   return retVal;
+});
+userFunc.checkUserExists.mockImplementation(async (uname) => {
+  const data = testData.corrUsers;
+  let retVal = false;
+
+  data.forEach((uObj) => {
+    if (uname === uObj.username) retVal = true;
+  });
+  return retVal;
+});
+userFunc.modUserByAdmin.mockImplementation(
+  async (uname, newPasswd, newUtype, newUrole) => {
+    if (!(await userFunc.checkUserExists(uname)))
+      return [200, { message: 'User does not exist.' }];
+    const uObj = {
+      username: uname,
+      password: newPasswd,
+      usertype: newUtype,
+      userrole: newUrole,
+    };
+    if (
+      !!uObj.username &&
+      !!uObj.password &&
+      !!uObj.usertype &&
+      !!uObj.userrole
+    )
+      return [201, { message: 'Details updated successfully.' }];
+    return [500, { message: 'Details could not be updated successfully.' }];
+  }
+);
+
+userFunc.modUserByRegular.mockImplementation(async (uname, newPasswd) => {
+  if (!(await userFunc.checkUserExists(uname)))
+    return [200, { message: 'User does not exist.' }];
+  const uObj = {
+    username: uname,
+    password: newPasswd,
+  };
+  if (!!uObj.username && !!uObj.password)
+    return [201, { message: 'Details updated successfully.' }];
+  return [500, { message: 'Details could not be updated successfully.' }];
 });
 
 const app = await makeApp(userFunc);
@@ -218,6 +262,64 @@ describe('Login user endpoint', () => {
           .post('/users/login-user')
           .send(userObj);
         expect(response.statusCode).toBe(404);
+      })
+    );
+  });
+
+  test('should return 404 for missing username and 401 for missing password', async () => {
+    const userInfo = testData.missUserParams;
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .post('/users/login-user')
+          .send(userObj);
+        if (!userObj.username) {
+          expect(response.statusCode).toBe(404);
+        } else if (!userObj.password) {
+          expect(response.statusCode).toBe(401);
+        }
+      })
+    );
+  });
+});
+
+describe('Modify user endpoint', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('should call modUserByAdmin() function', async () => {
+    const userInfo = testData.corrAdminUsers[0];
+    await request(app).put('/users/modify-user').send(userInfo);
+    expect(userFunc.modUserByAdmin).toHaveBeenCalled();
+  });
+
+  test('should call modUserByAdmin() function only once per request', async () => {
+    const userInfo = testData.corrAdminUsers[0];
+    await request(app).put('/users/modify-user').send(userInfo);
+    expect(userFunc.modUserByAdmin).toHaveBeenCalledTimes(1);
+  });
+
+  test('should call modUserByRegular() function', async () => {
+    const userInfo = testData.regularUsers[0];
+    await request(app).put('/users/modify-user').send(userInfo);
+    expect(userFunc.modUserByRegular).toHaveBeenCalled();
+  });
+
+  test('should call modUserByRegular() function only once per request', async () => {
+    const userInfo = testData.regularUsers[0];
+    await request(app).put('/users/modify-user').send(userInfo);
+    expect(userFunc.modUserByRegular).toHaveBeenCalledTimes(1);
+  });
+
+  test('should return status code of 201 when update done successfully by the Admin', async () => {
+    const userInfo = testData.corrAdminUsers;
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .put('/users/modify-user')
+          .send(userObj);
+        expect(response.statusCode).toBe(201);
       })
     );
   });

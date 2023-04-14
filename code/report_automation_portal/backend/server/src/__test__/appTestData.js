@@ -71,6 +71,12 @@ const missUserParams = [
     usertype: 'Admin',
     userrole: '',
   },
+  {
+    username: 'test5',
+    password: '',
+    usertype: 'Admin',
+    userrole: 'Employee',
+  },
 ];
 
 const corrAdminUsers = [
@@ -140,6 +146,33 @@ const nonExistUser = [
   },
 ];
 
+const regularUsers = [
+  {
+    username: 'test2',
+    password: 'HelloWorld@2',
+    usertype: 'Regular',
+    userrole: 'Employee',
+  },
+  {
+    username: 'test4',
+    password: 'Applebear$6',
+    usertype: 'Regular',
+    userrole: 'Employee',
+  },
+  {
+    username: 'test7',
+    password: 'GreatPerson*9',
+    usertype: 'Regular',
+    userrole: 'Employee',
+  },
+  {
+    username: 'test5',
+    password: 'HappyMoon#6S',
+    usertype: 'Regular',
+    userrole: 'Employee',
+  },
+];
+
 export default {
   corrUsers,
   insuffUserPass,
@@ -147,4 +180,5 @@ export default {
   corrAdminUsers,
   corrPassArr,
   nonExistUser,
+  regularUsers,
 };
