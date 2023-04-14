@@ -21,6 +21,7 @@ userFunc.addUser.mockImplementation(async (uname, passwrd, utype, urole) => {
     userFunc.chkPassStrngth(passwrd, 1)
   )
     return [200, { message: 'User added successfully.' }];
+
   return [500, { message: 'User could not be added' }];
 });
 
@@ -46,9 +47,14 @@ userFunc.getUserDetails.mockImplementation(async (uname) => {
   return retVal;
 });
 
-userFunc.getPassHash.mockImplementation(
-  async () => '$2$12adskjfhasdkjfhnsdkjfnkljn'
-);
+userFunc.getPassHash.mockImplementation(async (uname) => {
+  const data = testData.corrPassArr;
+  let retVal;
+  data.forEach((uObj) => {
+    if (uname === uObj.username) retVal = uObj.corrHash;
+  });
+  return retVal;
+});
 
 const app = await makeApp(userFunc);
 
@@ -136,12 +142,59 @@ describe('Get user details endpoint', () => {
 });
 
 describe('Login user endpoint', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   test('should call the getPassHash() function', async () => {
-    console.log(userFunc.getPassHash);
-    const response = await request(app).post('users/login-user').send({
+    await request(app).post('/users/login-user').send({
       username: 'test4',
-      password: 'testPass*2',
+      password: 'Applebear$6',
     });
-    console.log(response);
+    expect(userFunc.getPassHash).toHaveBeenCalled();
+  });
+
+  test('should call getPassHash() only once per request', async () => {
+    await request(app).post('/users/login-user').send({
+      username: 'test4',
+      password: 'Applebear$6',
+    });
+    expect(userFunc.getPassHash).toHaveBeenCalledTimes(1);
+  });
+
+  test('should return status code 200 for valid login', async () => {
+    const userInfo = testData.corrUsers;
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .post('/users/login-user')
+          .send(userObj);
+        expect(response.statusCode).toBe(200);
+      })
+    );
+  });
+
+  test('should return status code for invalid login credentials.', async () => {
+    const userInfo = testData.insuffUserPass;
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .post('/users/login-user')
+          .send(userObj);
+        expect(response.statusCode).toBe(401);
+      })
+    );
+  });
+
+  test('should return status code 404 for wrong username', async () => {
+    const userInfo = testData.nonExistUser;
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .post('/users/login-user')
+          .send(userObj);
+        expect(response.statusCode).toBe(404);
+      })
+    );
   });
 });

@@ -36,6 +36,7 @@ const makeApp = async (userFunc) => {
           .status(404)
           .send({ message: 'Username incorrect. Please check the username.' });
         // res.redirect("/")
+        return;
       }
 
       const validPass = await validatePass(req.body.password, passHash);
@@ -51,11 +52,10 @@ const makeApp = async (userFunc) => {
             return undefined;
           });
         });
-        console.log(req.session.user);
         res.status(200).json({ message: 'Yay! Logged in.' });
       } else {
         req.session.validSession = false;
-        res.status(200).json({ message: 'Oh no. Wrong password' });
+        res.status(401).json({ message: 'Oh no. Wrong password' });
         // res.redirect("/Login")
       }
     }
