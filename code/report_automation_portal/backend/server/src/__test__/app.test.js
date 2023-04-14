@@ -2,73 +2,131 @@ import request from "supertest";
 import { jest } from "@jest/globals";
 import makeApp from "../app.js";
 import userOps from "../../middleware/db_user.js";
-//import mysql from 'mysql2';
+import testData from './appTestData';
 
-/* const chkPassStrngth = jest.fn()
-const getPassHash = jest.fn()
-const getUserType = jest.fn()
-const checkUserExists = jest.fn()
-const chkAdmin = jest.fn()
-const addUser = jest.fn().mockResolvedValue()
-const modUserByAdmin = jest.fn()
-const modUserByRegular = jest.fn()
-const deleteUser = jest.fn()
-const getUserDetails = jest.fn() */
-
-/* const addUser = jest.fn(() => {
-    return [200, {message: "User added successfully"}]
-}) */
-
-//jest.mock('mysql2');
-
-/* const mockQuery = mysql.query
-console.log(mockQuery)
-
-beforeEach(() => {
-    mockQuery.mockReset()
-}) */
-//const db = undefined
 const db = jest.fn();
-/* jest.mock('../../middleware/db_user', () => {
-    const original = jest.requireActual('../../middleware/db_user')
-    const ori_userFunc = original(db)
-    return {
-        ...ori_userFunc,
-        addUser: jest.fn()
-    }
-}) */
-
 const userFunc = await userOps(db);
 jest.spyOn(userFunc, "addUser");
-
-userFunc.addUser.mockImplementation(async () => {
-  return { statusCode: 200, json: { message: "User added successfully." } };
+jest.spyOn(userFunc, "chkAdmin");
+jest.spyOn(userFunc, "getUserType");
+jest.spyOn(userFunc, "getUserDetails");
+userFunc.addUser.mockImplementation(async (uname, passwrd, utype, urole) => {
+  if (!!uname && !!passwrd && !!utype && !!urole && userFunc.chkPassStrngth(passwrd, 1))
+  return [ 200, { message: "User added successfully." }];
+  return [500, { message: 'User could not be added' }];
 });
-/* const db = jest.fn()
-let userFunc = await userOps(db) 
-const mockUserAdd = userFunc.addUser
-console.log(mockUserAdd) */
-/* const userFunc = await userOps(db) */
+userFunc.getUserType.mockImplementation(async (uname) => {
+  const data = testData.corrUsers
+  for (const uObj of data) {
+    if (uname === uObj.username)
+    return uObj.usertype
+  }
+});
 
-const app = await makeApp(userOps);
+userFunc.chkAdmin.mockImplementation(async (uname) => {
+  return (((await userFunc.getUserType(uname)).toLowerCase()) === 'admin')
+})
+
+userFunc.getUserDetails.mockImplementation(async (uname) => {
+  const data = testData.corrAdminUsers
+  for (const uObj of data) {
+    if (uname === uObj.username)
+    return [200, uObj]
+  }
+});
+
+const app = await makeApp(userFunc);
 
 describe("User addition endpoint", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+  
+  test('should call userAdd() function in the request', async () => { 
+       const response = await request(app).post("/users/add-user").send({
+           username: "test2",
+           password: "testPass#4",
+           usertype: "Regular",
+           userrole: "Employee"
+       });
+       expect(userFunc.addUser).toHaveBeenCalled();
+   }) 
+   
+   test('should call userAdd() function only once per request', async () => { 
+       const response = await request(app).post("/users/add-user").send({
+           username: "test2",
+           password: "testPass#4",
+           usertype: "Regular",
+           userrole: "Employee"
+       });
+       expect(userFunc.addUser).toHaveBeenCalledTimes(1);
+    })
+  
+  
+
   test("should return status code 200 for successful addition of user", async () => {
-    //addUser.mockReset()
-    //mockQuery.mockResolvedValue([{affectedRows: 1}])
-    const response = await request(app).post("/users/add-user").send({
-      username: "test2",
-      password: "testPass#4",
-      usertype: "Regular",
-      userrole: "Employee",
-    });
-    expect(response.statusCode).toBe(200);
+    const userInfo = testData.corrUsers
+
+    for (const userObj of userInfo) {
+        const response = await request(app).post("/users/add-user").send(userObj);
+        expect(response.statusCode).toBe(200);
+    }
+  });
+  
+  test('should return status code 400 for insufficient password strength', async () => { 
+    const userInfo = testData.insuffUserPass
+    
+    for (const userObj of userInfo) {
+        const response = await request(app).post("/users/add-user").send(userObj);
+        expect(response.statusCode).toBe(400);
+    }
+   });
+
+  test('should return status code 400 for errors in parameters.', async () => { 
+    const userInfo = testData.missUserParams
+    
+    for (const userObj of userInfo) {
+        const response = await request(app).post("/users/add-user").send(userObj);
+        expect(response.statusCode).toBe(400);
+    }
+   })
+
+});
+
+
+describe('Get user details endpoint', () => { 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+  
+  test('should call getUserDetails() function', async () => { 
+    const response = await request(app).get('/users/details-user').send({username: "test4"})
+    expect(userFunc.getUserDetails).toHaveBeenCalled()
+  })
+
+  test('should call getUserDetails() function exactly once per request', async () => { 
+    const response = await request(app).get('/users/details-user').send({username: "test4"})
+    expect(userFunc.getUserDetails).toHaveBeenCalledTimes(1)
+  })
+
+  test('should return status code 200', async () => { 
+    const userInfo = testData.corrAdminUsers
+    for (const userObj of userInfo) {
+      const response = await request(app).get('/users/details-user').send({username: userObj.username})
+      expect(response.statusCode).toBe(200)
+    }
   });
 
-  /* test('should get all the details of the user', async () => { 
-        const response = await request(app).get('/users/details-user').send({
-            username: "test1"
-        })
-        console.log(response)
-     }) */
-});
+  test('should return all the details of the user', async () => { 
+    const userInfo = testData.corrAdminUsers
+    for (const userObj of userInfo) {  
+      const response = await request(app).get('/users/details-user').send({username: userObj.username})
+      expect(([response.text]).every(x => x !== null || x !== undefined || x !== "")).toBe(true)
+    }
+    });
+
+})
+
+describe('Login user endpoint', () => { 
+
+})

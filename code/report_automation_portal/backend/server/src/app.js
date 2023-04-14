@@ -63,14 +63,13 @@ const makeApp = async (userFunc) => {
     let addSts = 400;
     let addMesg = { "": "" };
 
-    if (!!req.body.username && userFunc.chkPassStrngth(req.body.password, 1)) {
+    if (!!req.body.username && !!req.body.password && !!req.body.usertype && !!req.body.userrole && userFunc.chkPassStrngth(req.body.password, 1)) {
       [addSts, addMesg] = await userFunc.addUser(
         req.body.username,
         req.body.password,
         req.body.usertype,
         req.body.userrole
       );
-      console.log(addSts, addMesg);
     } else {
       addMesg = {
         message:
