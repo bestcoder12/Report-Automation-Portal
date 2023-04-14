@@ -12,21 +12,22 @@ const userOps = async (db) => {
     switch (strngthLvl) {
       case 0:
         if (
-          ptPassword.length > 6
-          && lowerUpperChk(ptPassword)
-          && numChk(ptPassword)
+          ptPassword.length > 6 &&
+          lowerUpperChk(ptPassword) &&
+          numChk(ptPassword)
         ) {
           return true;
         }
         return false;
       case 1: {
-        const symbolChk = (str) => /[\s~`!@#$%^&*+=\-[\]\\';,/{}|\\":<>?()._]/g.test(str);
+        const symbolChk = (str) =>
+          /[\s~`!@#$%^&*+=\-[\]\\';,/{}|\\":<>?()._]/g.test(str);
 
         if (
-          ptPassword.length > 8
-          && lowerUpperChk(ptPassword)
-          && symbolChk(ptPassword)
-          && numChk(ptPassword)
+          ptPassword.length > 8 &&
+          lowerUpperChk(ptPassword) &&
+          symbolChk(ptPassword) &&
+          numChk(ptPassword)
         ) {
           return true;
         }
@@ -54,13 +55,15 @@ const userOps = async (db) => {
   };
 
   const checkUserExists = async (userName) => {
-    const chkExistUser = 'SELECT EXISTS (SELECT 1 FROM user WHERE username = ?);';
+    const chkExistUser =
+      'SELECT EXISTS (SELECT 1 FROM user WHERE username = ?);';
     const [resExistUser] = await db.query(chkExistUser, [userName]);
     const userExist = Object.values([resExistUser][0][0])[0];
     return userExist !== 0;
   };
 
-  const chkAdmin = async (userName) => (await getUserType(userName)).toLowerCase() === 'admin';
+  const chkAdmin = async (userName) =>
+    (await getUserType(userName)).toLowerCase() === 'admin';
 
   const addUser = async (userName, userPassword, userType, userRole) => {
     const addUserQuery = 'INSERT INTO user VALUES (?, ?, ?, ?);';
@@ -87,7 +90,8 @@ const userOps = async (db) => {
       return [200, { message: 'User does not exist.' }];
     }
     const newPassHash = await bcrypt.hash(newPassword, 12);
-    const modUserQuery = 'UPDATE user SET pass_hash=?, user_type=?, user_role=? WHERE username=?;';
+    const modUserQuery =
+      'UPDATE user SET pass_hash=?, user_type=?, user_role=? WHERE username=?;';
     const modResult = await db.query(modUserQuery, [
       newPassHash,
       newType,

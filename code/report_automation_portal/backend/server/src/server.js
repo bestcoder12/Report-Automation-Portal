@@ -1,10 +1,11 @@
-import * as dotenv from "dotenv";
-dotenv.config();
-import db from "../middleware/database.js";
-import userOps from "../middleware/db_user.js";
-import makeApp from "./app.js";
+import * as dotenv from 'dotenv';
+import db from '../middleware/database.js';
+import userOps from '../middleware/db_user.js';
+import makeApp from './app.js';
 
-export const server = async () => {
+dotenv.config();
+
+const server = async () => {
   const userFunc = await userOps(db);
   const app = await makeApp(userFunc);
   const port = process.env.SERVER_PORT || 8080;
@@ -12,5 +13,7 @@ export const server = async () => {
     console.log(`Express App listening on port ${port}`);
   });
 };
+
+export default server;
 
 server();

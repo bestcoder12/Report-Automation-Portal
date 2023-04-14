@@ -1,11 +1,12 @@
-import express from "express";
-//import cors from 'cors';
-import * as dotenv from "dotenv";
+import * as dotenv from 'dotenv';
+import session from 'express-session';
+import express from 'express';
+import validatePass from './auth/validatePass.js';
+
 dotenv.config();
-import validatePass from "./auth/validatePass.js";
-import session from "express-session";
-//import sessionStore from '../middleware/database.js'
-//import bcrypt from 'bcrypt';
+// import cors from "cors";
+// import sessionStore from "../middleware/database.js"
+// import bcrypt from "bcrypt";
 
 const makeApp = async (userFunc) => {
   const app = express();
@@ -15,26 +16,26 @@ const makeApp = async (userFunc) => {
     session({
       key: process.env.SESSION_KEY,
       secret: process.env.SESSION_SECRET,
-      //store: sessionStore,
+      // store: sessionStore,
       resave: true,
       saveUninitialized: false,
     })
   );
 
   app.post(
-    "/users/login-user",
+    '/users/login-user',
     express.urlencoded({ extended: false }),
-    async (req, res) => {
+    async (req, res, next) => {
       const passHash = await userFunc.getPassHash(req.body.username);
       if (passHash === undefined) {
         // User may not exist or typo in username
         console.log(
-          `The user ${req.body.username} being queried doesn't exist.`
+          `The user ${req.body.username} being queried doesn"t exist.`
         );
         res
           .status(404)
-          .send({ message: "Username incorrect. Please check the username." });
-        //res.redirect('/')
+          .send({ message: 'Username incorrect. Please check the username.' });
+        // res.redirect("/")
       }
 
       const validPass = await validatePass(req.body.password, passHash);
@@ -43,27 +44,34 @@ const makeApp = async (userFunc) => {
           if (err) next(err);
           req.session.validSession = true;
           req.session.user = req.body.username;
-          req.session.utype = getUserType(req.body.username);
-          req.session.save((err) => {
+          req.session.utype = userFunc.getUserType(req.body.username);
+          req.session.save(() => {
             if (err) return next(err);
-            //res.redirect('/Dashboard')
+            // res.redirect("/Dashboard")
+            return undefined;
           });
         });
         console.log(req.session.user);
-        res.status(200).json({ message: "Yay! Logged in." });
+        res.status(200).json({ message: 'Yay! Logged in.' });
       } else {
         req.session.validSession = false;
-        res.status(200).json({ message: "Oh no. Wrong password" });
-        //res.redirect('/Login')
+        res.status(200).json({ message: 'Oh no. Wrong password' });
+        // res.redirect("/Login")
       }
     }
   );
 
-  app.post("/users/add-user", async (req, res) => {
+  app.post('/users/add-user', async (req, res) => {
     let addSts = 400;
-    let addMesg = { "": "" };
+    let addMesg = { '': '' };
 
-    if (!!req.body.username && !!req.body.password && !!req.body.usertype && !!req.body.userrole && userFunc.chkPassStrngth(req.body.password, 1)) {
+    if (
+      !!req.body.username &&
+      !!req.body.password &&
+      !!req.body.usertype &&
+      !!req.body.userrole &&
+      userFunc.chkPassStrngth(req.body.password, 1)
+    ) {
       [addSts, addMesg] = await userFunc.addUser(
         req.body.username,
         req.body.password,
@@ -73,15 +81,15 @@ const makeApp = async (userFunc) => {
     } else {
       addMesg = {
         message:
-          "Password strength criterion not fulfilled. Please add Symbols, Upper and lower case letters.",
+          'Password strength criterion not fulfilled. Please add Symbols, Upper and lower case letters.',
       };
     }
     res.status(addSts).json(addMesg);
   });
 
-  app.get("/users/details-user", async (req, res) => {
+  app.get('/users/details-user', async (req, res) => {
     let detailsSts = 404;
-    let detailsMesg = { "": "" };
+    let detailsMesg = { '': '' };
 
     // if (userFunc.chkAdmin(req.session.user))
     if (userFunc.chkAdmin(req.body.username)) {
@@ -89,16 +97,16 @@ const makeApp = async (userFunc) => {
         req.body.username
       );
     } else {
-      detailsMesg = { message: "Could not perform operation" };
+      detailsMesg = { message: 'Could not perform operation' };
     }
     res.status(detailsSts).json(detailsMesg);
   });
 
-  app.put("/users/modify-user", async (req, res) => {
+  app.put('/users/modify-user', async (req, res) => {
     // Also check for admin having same username as req
     let updtSts = 404;
-    let updtMesg = { "": "" };
-    //if ((await userFunc.getUserType(req.session.user)).toLowerCase() == 'admin') {
+    let updtMesg = { '': '' };
+    // if ((await userFunc.getUserType(req.session.user)).toLowerCase() == "admin") {
     if (userFunc.chkAdmin(req.body.username)) {
       if (
         req.body.username !== req.session.user &&
@@ -111,52 +119,51 @@ const makeApp = async (userFunc) => {
           req.body.userrole
         );
       } else {
-        updtMesg = { message: "The change to other user is not allowed." };
+        updtMesg = { message: 'The change to other user is not allowed.' };
       }
-    } else {
       if (req.body.username === req.session.user) {
         [updtSts, updtMesg] = await userFunc.modUserByRegular(
           req.body.username,
           req.body.password
         );
       } else {
-        updtMesg = { message: "Could not perform operation" };
+        updtMesg = { message: 'Could not perform operation' };
       }
     }
     res.status(updtSts).json(updtMesg);
   });
 
-  app.delete("/users/delete-user", async (req, res) => {
+  app.delete('/users/delete-user', async (req, res) => {
     let delSts = 404;
-    let delMesg = { "": "" };
+    let delMesg = { '': '' };
     // if (userFunc.getUserType(req.session.user)) {
     if (await userFunc.chkAdmin(req.body.username)) {
       [delSts, delMesg] = await userFunc.deleteUser(req.body.username);
     } else {
-      delMesg = { message: "Could not perform operation" };
+      delMesg = { message: 'Could not perform operation' };
     }
     res.status(delSts).json(delMesg);
   });
 
-  app.get("/users/logout", async (req, res) => {
+  app.get('/users/logout', async (req, res, next) => {
     req.session.username = null;
-    req.session.save(function (err) {
+    req.session.save((err) => {
       if (err) next(err);
-      req.session.regenerate(function (err) {
+      req.session.regenerate(() => {
         if (err) next(err);
-        res.redirect("/");
+        res.redirect('/');
       });
     });
   });
 
-  /* app.post('/reports/upload-report', upload.single("xlsx"), async (req, res) => {
+  /* app.post("/reports/upload-report", upload.single("xlsx"), async (req, res) => {
         uploadReportToDB(req.body.type, req.body.date, req.body.sesn)
         storeFileToServer(req.file)
     }) */
 
-  app.use((err, req, res, next) => {
+  app.use((err, req, res) => {
     console.log(err);
-    res.status(500).send("Something broke");
+    res.status(500).send('Something broke');
   });
 
   return app;
