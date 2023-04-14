@@ -77,28 +77,39 @@ describe('User addition endpoint', () => {
 
   test('should return status code 200 for successful addition of user', async () => {
     const userInfo = testData.corrUsers;
-    userInfo.forEach(async (userObj) => {
-      const response = await request(app).post('/users/add-user').send(userObj);
-      expect(response.statusCode).toBe(200);
-    });
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .post('/users/add-user')
+          .send(userObj);
+        expect(response.statusCode).toBe(200);
+      })
+    );
   });
 
   test('should return status code 400 for insufficient password strength', async () => {
     const userInfo = testData.insuffUserPass;
 
-    userInfo.forEach(async (userObj) => {
-      const response = await request(app).post('/users/add-user').send(userObj);
-      expect(response.statusCode).toBe(400);
-    });
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .post('/users/add-user')
+          .send(userObj);
+        expect(response.statusCode).toBe(400);
+      })
+    );
   });
 
   test('should return status code 400 for errors in parameters.', async () => {
     const userInfo = testData.missUserParams;
-
-    userInfo.forEach(async (userObj) => {
-      const response = await request(app).post('/users/add-user').send(userObj);
-      expect(response.statusCode).toBe(400);
-    });
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .post('/users/add-user')
+          .send(userObj);
+        expect(response.statusCode).toBe(400);
+      })
+    );
   });
 });
 
@@ -108,36 +119,47 @@ describe('Get user details endpoint', () => {
   });
 
   test('should call getUserDetails() function', async () => {
-    await request(app).get('/users/details-user').send({ username: 'test4' });
+    const userObj = testData.corrAdminUsers[0];
+    await request(app)
+      .get('/users/details-user')
+      .send({ username: userObj.username });
     expect(userFunc.getUserDetails).toHaveBeenCalled();
   });
 
   test('should call getUserDetails() function exactly once per request', async () => {
-    await request(app).get('/users/details-user').send({ username: 'test4' });
+    const userObj = testData.corrAdminUsers[0];
+    await request(app)
+      .get('/users/details-user')
+      .send({ username: userObj.username });
     expect(userFunc.getUserDetails).toHaveBeenCalledTimes(1);
   });
 
   test('should return status code 200', async () => {
     const userInfo = testData.corrAdminUsers;
-
-    userInfo.forEach(async (userObj) => {
-      const response = await request(app)
-        .get('/users/details-user')
-        .send({ username: userObj.username });
-      expect(response.statusCode).toBe(200);
-    });
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .get('/users/details-user')
+          .send({ username: userObj.username });
+        expect(response.statusCode).toBe(200);
+      })
+    );
   });
 
   test('should return all the details of the user', async () => {
     const userInfo = testData.corrAdminUsers;
-    userInfo.forEach(async (userObj) => {
-      const response = await request(app)
-        .get('/users/details-user')
-        .send({ username: userObj.username });
-      expect(
-        [response.text].every((x) => x !== null || x !== undefined || x !== '')
-      ).toBe(true);
-    });
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .get('/users/details-user')
+          .send({ username: userObj.username });
+        expect(
+          [response.text].every(
+            (x) => x !== null || x !== undefined || x !== ''
+          )
+        ).toBe(true);
+      })
+    );
   });
 });
 
@@ -147,17 +169,19 @@ describe('Login user endpoint', () => {
   });
 
   test('should call the getPassHash() function', async () => {
+    const userObj = testData.corrUsers[0];
     await request(app).post('/users/login-user').send({
-      username: 'test4',
-      password: 'Applebear$6',
+      username: userObj.username,
+      password: userObj.password,
     });
     expect(userFunc.getPassHash).toHaveBeenCalled();
   });
 
   test('should call getPassHash() only once per request', async () => {
+    const userObj = testData.corrUsers[0];
     await request(app).post('/users/login-user').send({
-      username: 'test4',
-      password: 'Applebear$6',
+      username: userObj.username,
+      password: userObj.password,
     });
     expect(userFunc.getPassHash).toHaveBeenCalledTimes(1);
   });
