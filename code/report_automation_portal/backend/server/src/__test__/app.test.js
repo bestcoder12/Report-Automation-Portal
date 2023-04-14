@@ -10,11 +10,13 @@ jest.spyOn(userFunc, "addUser");
 jest.spyOn(userFunc, "chkAdmin");
 jest.spyOn(userFunc, "getUserType");
 jest.spyOn(userFunc, "getUserDetails");
+jest.spyOn(userFunc, "getPassHash");
 userFunc.addUser.mockImplementation(async (uname, passwrd, utype, urole) => {
   if (!!uname && !!passwrd && !!utype && !!urole && userFunc.chkPassStrngth(passwrd, 1))
   return [ 200, { message: "User added successfully." }];
   return [500, { message: 'User could not be added' }];
 });
+
 userFunc.getUserType.mockImplementation(async (uname) => {
   const data = testData.corrUsers
   for (const uObj of data) {
@@ -35,6 +37,10 @@ userFunc.getUserDetails.mockImplementation(async (uname) => {
   }
 });
 
+userFunc.getPassHash.mockImplementation(async () => {
+
+})
+
 const app = await makeApp(userFunc);
 
 describe("User addition endpoint", () => {
@@ -43,23 +49,15 @@ describe("User addition endpoint", () => {
   });
   
   test('should call userAdd() function in the request', async () => { 
-       const response = await request(app).post("/users/add-user").send({
-           username: "test2",
-           password: "testPass#4",
-           usertype: "Regular",
-           userrole: "Employee"
-       });
-       expect(userFunc.addUser).toHaveBeenCalled();
+      const userObj = testData.corrUsers[0]
+      const response = await request(app).post("/users/add-user").send(userObj);
+      expect(userFunc.addUser).toHaveBeenCalled();
    }) 
    
    test('should call userAdd() function only once per request', async () => { 
-       const response = await request(app).post("/users/add-user").send({
-           username: "test2",
-           password: "testPass#4",
-           usertype: "Regular",
-           userrole: "Employee"
-       });
-       expect(userFunc.addUser).toHaveBeenCalledTimes(1);
+      const userObj = testData.corrUsers[0]  
+      const response = await request(app).post("/users/add-user").send(userObj);
+      expect(userFunc.addUser).toHaveBeenCalledTimes(1);
     })
   
   
@@ -128,5 +126,11 @@ describe('Get user details endpoint', () => {
 })
 
 describe('Login user endpoint', () => { 
-
+  test('should call the getPassHash() function', async () => { 
+    const response = await request(app).post('users/login-user').send({
+      username: "test4",
+      password: "testPass*2"
+    })
+    console.log(response)
+   })
 })
