@@ -90,7 +90,11 @@ const makeApp = async (userFunc) => {
   app.get('/users/details-user', async (req, res) => {
     let detailsSts = 404;
     let detailsMesg = { '': '' };
-
+    const userExist = await userFunc.checkUserExists(req.body.username);
+    if (!userExist) {
+      detailsMesg = { message: 'User does not exist.' };
+      res.status(detailsSts).json(detailsMesg);
+    }
     // if (userFunc.chkAdmin(req.session.user))
     if (userFunc.chkAdmin(req.body.username)) {
       [detailsSts, detailsMesg] = await userFunc.getUserDetails(
@@ -106,8 +110,13 @@ const makeApp = async (userFunc) => {
     // Also check for admin having same username as req
     let updtSts = 404;
     let updtMesg = { '': '' };
+    const userExist = await userFunc.checkUserExists(req.body.username);
+    if (!userExist) {
+      updtMesg = { message: 'User does not exist.' };
+      // res.status(updtSts).json(updtMesg);
+    }
     // if ((await userFunc.getUserType(req.session.user)).toLowerCase() == "admin") {
-    if (userFunc.chkAdmin(req.body.username)) {
+    else if (await userFunc.chkAdmin(req.body.username)) {
       /*  if (
         req.body.username !== req.session.user &&
         !userFunc.chkAdmin(req.body.username)
@@ -123,8 +132,7 @@ const makeApp = async (userFunc) => {
         updtMesg = { message: 'The change to other user is not allowed.' };
       } */
       // if (req.body.username === req.session.user) {
-    }
-    if (
+    } else if (
       (await userFunc.getUserType(req.body.username)).toLowerCase() ===
       'regular'
     ) {
@@ -141,6 +149,11 @@ const makeApp = async (userFunc) => {
   app.delete('/users/delete-user', async (req, res) => {
     let delSts = 404;
     let delMesg = { '': '' };
+    const userExist = await userFunc.checkUserExists(req.body.username);
+    if (!userExist) {
+      delMesg = { message: 'User does not exist.' };
+      res.status(delSts).json(delMesg);
+    }
     // if (userFunc.getUserType(req.session.user)) {
     if (await userFunc.chkAdmin(req.body.username)) {
       [delSts, delMesg] = await userFunc.deleteUser(req.body.username);

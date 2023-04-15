@@ -70,7 +70,7 @@ userFunc.checkUserExists.mockImplementation(async (uname) => {
 userFunc.modUserByAdmin.mockImplementation(
   async (uname, newPasswd, newUtype, newUrole) => {
     if (!(await userFunc.checkUserExists(uname)))
-      return [200, { message: 'User does not exist.' }];
+      return [404, { message: 'User does not exist.' }];
     const uObj = {
       username: uname,
       password: newPasswd,
@@ -90,7 +90,7 @@ userFunc.modUserByAdmin.mockImplementation(
 
 userFunc.modUserByRegular.mockImplementation(async (uname, newPasswd) => {
   if (!(await userFunc.checkUserExists(uname)))
-    return [200, { message: 'User does not exist.' }];
+    return [404, { message: 'User does not exist.' }];
   const uObj = {
     username: uname,
     password: newPasswd,
@@ -323,4 +323,24 @@ describe('Modify user endpoint', () => {
       })
     );
   });
+
+  test('should return status code 404 for update to a user which does not exist', async () => {
+    const userInfo = testData.nonExistUser;
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .put('/users/modify-user')
+          .send(userObj);
+        expect(response.statusCode).toBe(404);
+      })
+    );
+  });
 });
+
+/* describe('Delete user endpoint', () => {
+  test('should call deleteUser() function', async () => {
+    const userInfo = testData.corrUsers[0];
+    await request(app).delete('/users/delete-user').send(userInfo);
+    expect(userFunc.deleteUser).toHaveBeenCalled();
+  });
+}); */

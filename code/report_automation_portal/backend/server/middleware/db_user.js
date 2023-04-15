@@ -87,7 +87,7 @@ const userOps = async (db) => {
   const modUserByAdmin = async (userName, newPassword, newType, newRole) => {
     const userExist = await checkUserExists(userName);
     if (!userExist) {
-      return [200, { message: 'User does not exist.' }];
+      return [404, { message: 'User does not exist.' }];
     }
     const newPassHash = await bcrypt.hash(newPassword, 12);
     const modUserQuery =

@@ -126,22 +126,30 @@ const corrPassArr = [
 const nonExistUser = [
   {
     username: 'Neo',
-    corrPass: 'HelloWorld@2',
+    password: 'HelloWorld@2',
+    usertype: 'Regular',
+    userrole: 'Employee',
     corrHash: '$2b$12$v83jedjCtVtxNnCGh0TeEebj.2BeTAcuDwIIZP79ScjdffFp58MKa',
   },
   {
     username: 'Smith',
-    corrPass: 'Applebear$6',
+    password: 'Applebear$6',
+    usertype: 'Admin',
+    userrole: 'Employee',
     corrHash: '$2b$12$nIK8BXJRGidwVH9YgoIBuOmM3lzcGtCuGmRxHGSLcFkIvSvii.ChO',
   },
   {
     username: 'John',
-    corrPass: 'GreatPerson*9',
+    password: 'GreatPerson*9',
+    usertype: 'Regular',
+    userrole: 'Employee',
     corrHash: '$2b$12$M5eq9EWK4gm8c7k08nEvcORtYYni.N5KyPJQ32HXcXCpuX5sbpvBC',
   },
   {
     username: 'Mike',
-    corrPass: 'HappyMoon#6S',
+    password: 'HappyMoon#6S',
+    usertype: 'Admin',
+    userrole: 'Employee',
     corrHash: '$2b$12$KTjf3e53pmmMD5Us4N5KXu9RPkVNFtUH4pHqzwB/cMoNCxuHbpcEa',
   },
 ];
