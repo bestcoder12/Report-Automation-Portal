@@ -67,10 +67,7 @@ const userOps = async (db) => {
 
   const addUser = async (userName, userPassword, userType, userRole) => {
     const addUserQuery = 'INSERT INTO user VALUES (?, ?, ?, ?);';
-    const userExist = await checkUserExists(userName);
-    if (userExist) {
-      return [400, { message: 'User already exists.' }];
-    }
+    let retVal;
     const insrtPassHash = await bcrypt.hash(userPassword, 12);
     const addMesg = await db.query(addUserQuery, [
       userName,
@@ -79,15 +76,26 @@ const userOps = async (db) => {
       userRole,
     ]);
     if (addMesg[0].affectedRows === 1) {
-      return [200, { message: 'User created successfully' }];
+      retVal = [200, { message: 'User created successfully' }];
+    } else {
+      retVal = [
+        500,
+        { message: 'User could not be added due to some database error.' },
+      ];
     }
-    return [500, { message: 'User could not be added' }];
+    return retVal;
   };
 
   const modUserByAdmin = async (userName, newPassword, newType, newRole) => {
-    const userExist = await checkUserExists(userName);
-    if (!userExist) {
-      return [404, { message: 'User does not exist.' }];
+    let retVal;
+    if (!userName || !newPassword || !newType || !newRole) {
+      retVal = [
+        400,
+        {
+          message:
+            'Details could not be updated successfully due to missing user details please check all the entries.',
+        },
+      ];
     }
     const newPassHash = await bcrypt.hash(newPassword, 12);
     const modUserQuery =
@@ -99,23 +107,31 @@ const userOps = async (db) => {
       userName,
     ]);
     if (modResult[0].affectedRows === 1) {
-      return [201, { message: 'Details updated successfully.' }];
+      retVal = [201, { message: 'Details updated successfully.' }];
     }
-    return [500, { message: 'Details could not be updated successfully.' }];
+    return retVal;
   };
 
   const modUserByRegular = async (userName, newPassword) => {
-    const userExist = await checkUserExists(userName);
-    if (!userExist) {
-      return [200, { message: 'User does not exist.' }];
+    let retVal;
+    if (!userName || !newPassword) {
+      retVal = [
+        400,
+        {
+          message:
+            'Details could not be updated successfully due to missing user details please check all the entries.',
+        },
+      ];
     }
     const newPassHash = await bcrypt.hash(newPassword, 12);
     const modUserQuery = 'UPDATE user SET pass_hash=? WHERE username=?;';
     const modResult = await db.query(modUserQuery, [newPassHash, userName]);
     if (modResult[0].affectedRows === 1) {
-      return [201, { message: 'Details updated successfully.' }];
+      retVal = [201, { message: 'Details updated successfully.' }];
+    } else {
+      retVal = [500, { Message: 'Details could not be updated successfully.' }];
     }
-    return [500, { Message: 'Details could not be updated successfully.' }];
+    return retVal;
   };
 
   const deleteUser = async (userName) => {

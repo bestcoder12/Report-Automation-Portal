@@ -65,24 +65,31 @@ const makeApp = async (userFunc) => {
     let addSts = 400;
     let addMesg = { '': '' };
 
-    if (
-      !!req.body.username &&
-      !!req.body.password &&
-      !!req.body.usertype &&
-      !!req.body.userrole &&
-      userFunc.chkPassStrngth(req.body.password, 1)
+    const userExist = await userFunc.checkUserExists(req.body.username);
+    if (userExist) {
+      addMesg = { message: 'User already exists.' };
+    } else if (
+      !req.body.username ||
+      !req.body.password ||
+      !req.body.usertype ||
+      !req.body.userrole
     ) {
+      addMesg = {
+        message: 'User details insufficient, please check all the fields.',
+      };
+    } else if (!userFunc.chkPassStrngth(req.body.password, 1)) {
+      addMesg = {
+        message:
+          'Password strength criterion not fulfilled. Please add Symbols, Upper and lower case letters.',
+      };
+    } else {
+      console.log(req.body);
       [addSts, addMesg] = await userFunc.addUser(
         req.body.username,
         req.body.password,
         req.body.usertype,
         req.body.userrole
       );
-    } else {
-      addMesg = {
-        message:
-          'Password strength criterion not fulfilled. Please add Symbols, Upper and lower case letters.',
-      };
     }
     res.status(addSts).json(addMesg);
   });
@@ -152,10 +159,9 @@ const makeApp = async (userFunc) => {
     const userExist = await userFunc.checkUserExists(req.body.username);
     if (!userExist) {
       delMesg = { message: 'User does not exist.' };
-      res.status(delSts).json(delMesg);
     }
-    // if (userFunc.getUserType(req.session.user)) {
-    if (await userFunc.chkAdmin(req.body.username)) {
+    // else if (userFunc.getUserType(req.session.user)) {
+    else if (await userFunc.chkAdmin(req.body.username)) {
       [delSts, delMesg] = await userFunc.deleteUser(req.body.username);
     } else {
       delMesg = { message: 'Could not perform operation' };

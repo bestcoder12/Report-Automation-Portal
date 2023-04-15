@@ -15,14 +15,15 @@ jest.spyOn(userFunc, 'getPassHash');
 jest.spyOn(userFunc, 'modUserByAdmin');
 jest.spyOn(userFunc, 'modUserByRegular');
 jest.spyOn(userFunc, 'checkUserExists');
+jest.spyOn(userFunc, 'deleteUser');
 userFunc.addUser.mockImplementation(async (uname, passwd, utype, urole) => {
-  if (
-    !!uname &&
-    !!passwd &&
-    !!utype &&
-    !!urole &&
-    userFunc.chkPassStrngth(passwd, 1)
-  )
+  const uObj = {
+    username: uname,
+    password: passwd,
+    usertype: utype,
+    userrole: urole,
+  };
+  if (userFunc.chkPassStrngth(uObj.password, 1))
     return [200, { message: 'User added successfully.' }];
 
   return [500, { message: 'User could not be added' }];
@@ -71,6 +72,15 @@ userFunc.modUserByAdmin.mockImplementation(
   async (uname, newPasswd, newUtype, newUrole) => {
     if (!(await userFunc.checkUserExists(uname)))
       return [404, { message: 'User does not exist.' }];
+    if (!uname || !newPasswd || !newUtype || !newUrole) {
+      return [
+        400,
+        {
+          message:
+            'Details could not be updated successfully due to missing user details please check all the entries.',
+        },
+      ];
+    }
     const uObj = {
       username: uname,
       password: newPasswd,
@@ -91,6 +101,15 @@ userFunc.modUserByAdmin.mockImplementation(
 userFunc.modUserByRegular.mockImplementation(async (uname, newPasswd) => {
   if (!(await userFunc.checkUserExists(uname)))
     return [404, { message: 'User does not exist.' }];
+  if (!uname || !newPasswd) {
+    return [
+      400,
+      {
+        message:
+          'Details could not be updated successfully due to missing user details please check all the entries.',
+      },
+    ];
+  }
   const uObj = {
     username: uname,
     password: newPasswd,
@@ -98,6 +117,13 @@ userFunc.modUserByRegular.mockImplementation(async (uname, newPasswd) => {
   if (!!uObj.username && !!uObj.password)
     return [201, { message: 'Details updated successfully.' }];
   return [500, { message: 'Details could not be updated successfully.' }];
+});
+userFunc.deleteUser.mockImplementation(async (uname) => {
+  const uObj = {
+    username: uname,
+  };
+  uObj.username = null;
+  return [200, { Message: 'User deleted successfully.' }];
 });
 
 const app = await makeApp(userFunc);
@@ -108,19 +134,20 @@ describe('User addition endpoint', () => {
   });
 
   test('should call userAdd() function in the request', async () => {
-    const userObj = testData.corrUsers[0];
-    await request(app).post('/users/add-user').send(userObj);
+    const userObj = testData.nonExistUser[0];
+    const response = await request(app).post('/users/add-user').send(userObj);
+    console.log(response);
     expect(userFunc.addUser).toHaveBeenCalled();
   });
 
   test('should call userAdd() function only once per request', async () => {
-    const userObj = testData.corrUsers[0];
+    const userObj = testData.nonExistUser[0];
     await request(app).post('/users/add-user').send(userObj);
     expect(userFunc.addUser).toHaveBeenCalledTimes(1);
   });
 
   test('should return status code 200 for successful addition of user', async () => {
-    const userInfo = testData.corrUsers;
+    const userInfo = testData.nonExistUser;
     await Promise.all(
       userInfo.map(async (userObj) => {
         const response = await request(app)
@@ -335,12 +362,67 @@ describe('Modify user endpoint', () => {
       })
     );
   });
+
+  test('should return status code 404 if username not provided and 400 for other missing parameters', async () => {
+    const userInfo = testData.missUserParams;
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .put('/users/modify-user')
+          .send(userObj);
+        if (!userObj.username) expect(response.statusCode).toBe(404);
+        else expect(response.statusCode).toBe(400);
+      })
+    );
+  });
 });
 
-/* describe('Delete user endpoint', () => {
+describe('Delete user endpoint', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   test('should call deleteUser() function', async () => {
-    const userInfo = testData.corrUsers[0];
+    const userInfo = testData.corrAdminUsers[0];
     await request(app).delete('/users/delete-user').send(userInfo);
     expect(userFunc.deleteUser).toHaveBeenCalled();
   });
-}); */
+
+  test('should call deleteUser() function only once per request', async () => {
+    const userInfo = testData.corrAdminUsers[0];
+    await request(app).delete('/users/delete-user').send(userInfo);
+    expect(userFunc.deleteUser).toHaveBeenCalledTimes(1);
+  });
+
+  test('should return status code of 200 for successful deletion', async () => {
+    const userInfo = testData.corrAdminUsers;
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .delete('/users/delete-user')
+          .send(userObj);
+        expect(response.statusCode).toBe(200);
+      })
+    );
+  });
+
+  test('should return status code of 404 for missing username', async () => {
+    const userInfo = { username: '' };
+    const response = await request(app)
+      .delete('/users/delete-user')
+      .send(userInfo);
+    expect(response.statusCode).toBe(404);
+  });
+
+  test('should return status code 404 for wrong username', async () => {
+    const userInfo = testData.nonExistUser;
+    await Promise.all(
+      userInfo.map(async (userObj) => {
+        const response = await request(app)
+          .delete('/users/delete-user')
+          .send(userObj);
+        expect(response.statusCode).toBe(404);
+      })
+    );
+  });
+});
