@@ -25,7 +25,7 @@ dotenv.config();
 // import sessionStore from "../middleware/database.js"
 // import bcrypt from "bcrypt";
 
-const makeApp = async (userFunc) => {
+const makeApp = async (userFunc, reportFunc) => {
   const app = express();
   app.use(express.json());
 
@@ -215,10 +215,14 @@ const makeApp = async (userFunc) => {
         upldMesg = {
           mesage: `The file ${req.file.originalname} is infected please check the file.`,
         };
+      } else {
+        [upldSts, upldMesg] = await reportFunc.uploadReportToDB(
+          req.body.type,
+          req.body.date,
+          req.body.sessn
+        );
       }
-      // const await uploadReportToDB(req.body.type, req.body.date, req.body.sesn);
-      // storeFileToServer(req.file)
-      console.log(req.file);
+      console.log(upldSts, upldMesg);
       res.status(upldSts).json(upldMesg);
     }
   );
