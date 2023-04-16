@@ -1,7 +1,24 @@
 import * as dotenv from 'dotenv';
 import session from 'express-session';
 import express from 'express';
+import multer from 'multer';
+// import * as XLSX from 'xlsx';
 import validatePass from './auth/validatePass.js';
+import chkCleanFile from './reportProc/chkCleanFile.js';
+
+const storage = multer.diskStorage({
+  destination: 'uploads/',
+  filename: (req, file, cb) => {
+    const fileDate = new Date();
+    cb(
+      null,
+      `report_${fileDate.getDate()}-${
+        fileDate.getMonth() + 1
+      }-${fileDate.getFullYear()}_${Math.round(Math.random())}.xlsx`
+    );
+  },
+});
+const upload = multer({ storage });
 
 dotenv.config();
 // import cors from "cors";
@@ -180,14 +197,36 @@ const makeApp = async (userFunc) => {
     });
   });
 
-  /* app.post("/reports/upload-report", upload.single("xlsx"), async (req, res) => {
-        uploadReportToDB(req.body.type, req.body.date, req.body.sesn)
-        storeFileToServer(req.file)
-    }) */
+  app.post(
+    '/reports/upload-report',
+    upload.single('xlsx'),
+    async (req, res) => {
+      let upldSts = 400;
+      let upldMesg = { '': '' };
+      const resCleanFile = await chkCleanFile(req.file);
+      if (resCleanFile === 1) {
+        upldSts = 400;
+        upldMesg = {
+          message:
+            'The file format is not Microsoft Excel (.xlsx).\n Please check the file',
+        };
+      } else if (resCleanFile === 2) {
+        upldSts = 400;
+        upldMesg = {
+          mesage: `The file ${req.file.originalname} is infected please check the file.`,
+        };
+      }
+      // const await uploadReportToDB(req.body.type, req.body.date, req.body.sesn);
+      // storeFileToServer(req.file)
+      console.log(req.file);
+      res.status(upldSts).json(upldMesg);
+    }
+  );
 
   app.use((err, req, res) => {
     console.log(err);
     res.status(500).send('Something broke');
+    console.log('This is the rejected field ->', err.field);
   });
 
   return app;
