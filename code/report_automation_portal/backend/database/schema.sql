@@ -1,3 +1,3 @@
 CREATE TABLE user (username VARCHAR(64), pass_hash VARCHAR(256), user_type VARCHAR(16), user_role VARCHAR(16));
 
-INSERT INTO user VALUES ('John', '$2y$12$ytVdJQ7n3MDqCTtCIkZjwORyqYNM51WIpDUdL8mS0XlklTdIkObh6', 'test', 'test1');
+CREATE TABLE fileLoc (report_type VARCHAR(64), report_date DATE, report_session VARCHAR(16), path_to_file VARCHAR(128));

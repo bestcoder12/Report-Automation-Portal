@@ -216,10 +216,17 @@ const makeApp = async (userFunc, reportFunc) => {
           mesage: `The file ${req.file.originalname} is infected please check the file.`,
         };
       } else {
+        const tempDate = new Date().toISOString();
+        const tempDate2 = new Date(tempDate);
+        const mySQLDateString = tempDate2
+          .toJSON()
+          .slice(0, 19)
+          .replace('T', ' ');
         [upldSts, upldMesg] = await reportFunc.uploadReportToDB(
           req.body.type,
-          req.body.date,
-          req.body.sessn
+          mySQLDateString,
+          req.body.sessn,
+          req.file.path
         );
       }
       console.log(upldSts, upldMesg);
