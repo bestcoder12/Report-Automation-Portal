@@ -2,9 +2,9 @@ import * as dotenv from 'dotenv';
 import session from 'express-session';
 import express from 'express';
 import multer from 'multer';
-// import * as XLSX from 'xlsx';
 import validatePass from './auth/validatePass.js';
 import chkCleanFile from './reportProc/chkCleanFile.js';
+import classifyOperation from './reportProc/classifyOperation.js';
 
 const storage = multer.diskStorage({
   destination: 'uploads/',
@@ -203,6 +203,7 @@ const makeApp = async (userFunc, reportFunc) => {
     async (req, res) => {
       let upldSts = 400;
       let upldMesg = { '': '' };
+      let reportId;
       const resCleanFile = await chkCleanFile(req.file);
       if (resCleanFile === 1) {
         upldSts = 400;
@@ -222,17 +223,44 @@ const makeApp = async (userFunc, reportFunc) => {
           .toJSON()
           .slice(0, 19)
           .replace('T', ' ');
-        [upldSts, upldMesg] = await reportFunc.uploadReportToDB(
+        [upldSts, upldMesg, reportId] = await reportFunc.storeReportToServer(
           req.body.type,
           mySQLDateString,
           req.body.sessn,
           req.file.path
+        );
+
+        [upldSts, upldMesg] = await classifyOperation(
+          req.file,
+          req.body.type,
+          reportId,
+          'store',
+          reportFunc
         );
       }
       console.log(upldSts, upldMesg);
       res.status(upldSts).json(upldMesg);
     }
   );
+
+  app.get('/reports/fetch-reports', async (req, res) => {
+    let ftchSts = 400;
+    let ftchMesg = { '': '' };
+    const reportId = await reportFunc.getReportId(
+      req.body.type,
+      req.body.date,
+      req.body.sessn
+    );
+
+    [ftchSts, ftchMesg] = await classifyOperation(
+      req.file,
+      req.body.type,
+      reportId,
+      'fetch',
+      reportFunc
+    );
+    res.status(ftchSts).json(ftchMesg);
+  });
 
   app.use((err, req, res) => {
     console.log(err);
