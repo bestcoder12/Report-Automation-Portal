@@ -17,7 +17,7 @@ const reportOps = async (db) => {
     reportSessn,
     reportPath
   ) => {
-    const reportId = getReportId(reportType, reportDate, reportSessn);
+    const reportId = await getReportId(reportType, reportDate, reportSessn);
     const upldQuery = 'INSERT INTO file_loc VALUES (?, ?,?,?,?);';
     const resUpldQuery = await db.query(upldQuery, [
       reportId,
@@ -94,7 +94,7 @@ const reportOps = async (db) => {
     ];
     const actData = getJsonFromXlsx(reportFile.path, reportHeaders);
     const storeOltMonthlyQuery =
-      'INSERT INTO olt_monthly VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+      'INSERT INTO olt_monthly VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
 
     let retVal;
 
@@ -190,7 +190,24 @@ const reportOps = async (db) => {
     return retVal;
   };
 
-  return { getReportId, storeReportToServer, storeOltMonthly, storeOltNet };
+  const fetchReport = async (reportType, reportId) => {
+    /* const resReportExists = await chkReportExists(reportId);
+    if (!resReportExists)
+    {
+      return [404, { message: `The report being queried does't exist.` }];
+    } */
+    const fetchQuery = 'SELECT * FROM ?? WHERE report_id = ?';
+    const [resFetchQuery] = await db.query(fetchQuery, [reportType, reportId]);
+    return [200, resFetchQuery];
+  };
+
+  return {
+    getReportId,
+    storeReportToServer,
+    storeOltMonthly,
+    storeOltNet,
+    fetchReport,
+  };
 };
 
 export default reportOps;

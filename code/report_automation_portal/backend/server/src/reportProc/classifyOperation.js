@@ -35,12 +35,15 @@ const classifyOperation = async (
       default:
     }
   } else if (opType === 'fetch') {
+    let reportLoc;
     switch (reportType) {
       case 'olt-monthly':
-        await reportFunc.fetchOltMonthly(reportFile, reportId);
+        reportLoc = 'olt_monthly';
+        retVal = await reportFunc.fetchReport(reportLoc, reportId);
         break;
       case 'olt-net-provider':
-        await reportFunc.fetchOltMonthly(reportFile, reportId);
+        reportLoc = 'olt_net_provider';
+        retVal = await reportFunc.fetchReport(reportLoc, reportId);
         break;
       case 'ont-ticket':
         break;

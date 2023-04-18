@@ -14,6 +14,19 @@ const server = async () => {
   app.listen(port, () => {
     console.log(`Express App listening on port ${port}`);
   });
+
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM signal received');
+    if (server.closeAllConnections) server.closeAllConnections();
+    else setTimeout(() => process.exit(0), 5000);
+    server.close(() => {
+      console.log('Server is now closed.');
+      db.end((err) => {
+        if (err) throw err;
+        process.exit(0);
+      });
+    });
+  });
 };
 
 export default server;

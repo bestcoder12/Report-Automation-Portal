@@ -203,7 +203,6 @@ const makeApp = async (userFunc, reportFunc) => {
     async (req, res) => {
       let upldSts = 400;
       let upldMesg = { '': '' };
-      let reportId;
       const resCleanFile = await chkCleanFile(req.file);
       if (resCleanFile === 1) {
         upldSts = 400;
@@ -223,6 +222,7 @@ const makeApp = async (userFunc, reportFunc) => {
           .toJSON()
           .slice(0, 19)
           .replace('T', ' ');
+        let reportId;
         [upldSts, upldMesg, reportId] = await reportFunc.storeReportToServer(
           req.body.type,
           mySQLDateString,
@@ -246,19 +246,22 @@ const makeApp = async (userFunc, reportFunc) => {
   app.get('/reports/fetch-reports', async (req, res) => {
     let ftchSts = 400;
     let ftchMesg = { '': '' };
-    const reportId = await reportFunc.getReportId(
+    /* const reportId = await reportFunc.getReportId(
       req.body.type,
       req.body.date,
       req.body.sessn
-    );
+    ); */
+    const reportId = 'olt-monthly$2023-04-1814:27:00$2pm';
 
+    // [ftchSts, ftchMesg] = await reportFunc.fetchReport(req.body.type, reportId);
     [ftchSts, ftchMesg] = await classifyOperation(
-      req.file,
+      undefined,
       req.body.type,
       reportId,
       'fetch',
       reportFunc
     );
+
     res.status(ftchSts).json(ftchMesg);
   });
 
