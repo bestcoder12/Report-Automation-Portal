@@ -246,21 +246,26 @@ const makeApp = async (userFunc, reportFunc) => {
   app.get('/reports/fetch-reports', async (req, res) => {
     let ftchSts = 400;
     let ftchMesg = { '': '' };
-    /* const reportId = await reportFunc.getReportId(
+    const reportId = await reportFunc.getReportId(
       req.body.type,
       req.body.date,
       req.body.sessn
-    ); */
-    const reportId = 'olt-monthly$2023-04-1814:27:00$2pm';
-
-    // [ftchSts, ftchMesg] = await reportFunc.fetchReport(req.body.type, reportId);
-    [ftchSts, ftchMesg] = await classifyOperation(
-      undefined,
-      req.body.type,
-      reportId,
-      'fetch',
-      reportFunc
     );
+    const resReportExists = await reportFunc.chkReportExists(reportId);
+    if (!resReportExists) {
+      [ftchSts, ftchMesg] = [
+        404,
+        { message: `The report being queried does't exist.` },
+      ];
+    } else {
+      [ftchSts, ftchMesg] = await classifyOperation(
+        undefined,
+        req.body.type,
+        reportId,
+        'fetch',
+        reportFunc
+      );
+    }
 
     res.status(ftchSts).json(ftchMesg);
   });

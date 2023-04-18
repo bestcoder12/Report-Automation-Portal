@@ -36,6 +36,14 @@ const reportOps = async (db) => {
     return [200, { message: 'Report added to Database' }, reportId];
   };
 
+  const chkReportExists = async (reportId) => {
+    const reportExistQuery =
+      'SELECT EXISTS (SELECT 1 FROM file_loc WHERE report_id = ?);';
+    const resReportExist = db.query(reportExistQuery, [reportId]);
+    const reportExist = Object.values([resReportExist][0][0])[0];
+    return reportExist !== 0;
+  };
+
   const getJsonFromXlsx = (filePath, fileHeaders) => {
     const workbook = XLSX.readFile(filePath);
     const sheetNameList = workbook.SheetNames;
@@ -191,11 +199,6 @@ const reportOps = async (db) => {
   };
 
   const fetchReport = async (reportType, reportId) => {
-    /* const resReportExists = await chkReportExists(reportId);
-    if (!resReportExists)
-    {
-      return [404, { message: `The report being queried does't exist.` }];
-    } */
     const fetchQuery = 'SELECT * FROM ?? WHERE report_id = ?';
     const [resFetchQuery] = await db.query(fetchQuery, [reportType, reportId]);
     return [200, resFetchQuery];
@@ -203,6 +206,7 @@ const reportOps = async (db) => {
 
   return {
     getReportId,
+    chkReportExists,
     storeReportToServer,
     storeOltMonthly,
     storeOltNet,
