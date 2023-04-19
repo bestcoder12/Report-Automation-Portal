@@ -212,7 +212,7 @@ const reportOps = async (db) => {
         district, 
         SUM(IF(olt_state LIKE '%UNREACHABLE', 1, 0)) AS UNREACHABLE 
       FROM olt_net_provider
-      GROUP BY district
+      GROUP BY report_id, district
       HAVING report_id = ?
     ), up_olt AS
     (
@@ -221,7 +221,7 @@ const reportOps = async (db) => {
         district, 
         SUM(IF(olt_state LIKE '%UP', 1, 0)) AS UP 
       FROM olt_net_provider 
-      GROUP BY district
+      GROUP BY report_id, district
       HAVING report_id = ?
     ), total_olt AS
     (
@@ -235,6 +235,8 @@ const reportOps = async (db) => {
       JOIN unreach_olt
       ON up_olt.district = unreach_olt.district
         AND up_olt.report_id = unreach_olt.report_id
+      GROUP BY up_olt.report_id, up_olt.district
+      HAVING report_id = ?
     ), percent_olt_up AS
     ( 
       SELECT 
@@ -254,10 +256,11 @@ const reportOps = async (db) => {
     FROM percent_olt_up
     JOIN olt_net_provider ON percent_olt_up.report_id = olt_net_provider.report_id 
       AND percent_olt_up.district = olt_net_provider.district
-    WHERE olt_net_provider.report_id = ?
-    GROUP BY percent_olt_up.district;`;
+    GROUP BY percent_olt_up.report_id, percent_olt_up.district
+    HAVING percent_olt_up.report_id = ?;`;
 
-    console.log(reportType, reportId, genOltStatusQuery);
+    console.log(genOltStatusQuery, reportId, reportType);
+    // const resGenOltStatus = await db.query()
   };
 
   return {
