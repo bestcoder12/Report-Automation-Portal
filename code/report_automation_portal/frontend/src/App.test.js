@@ -5,14 +5,13 @@ import App from './App';
 const MockApp = () => {
   <Router>
     <App />
-  </Router>
-}
+  </Router>;
+};
 
-describe('should render landing page', () => { 
-  
-  test('should render blank page', () => { 
-    render(<MockApp />)
-    const divElements = screen.getAllByText('')
-    expect(divElements.length).toBe(2)
-   })
- })
+describe('should render landing page', () => {
+  test('should render blank page', () => {
+    render(<MockApp />);
+    const divElements = screen.getAllByText('');
+    expect(divElements.length).toBe(2);
+  });
+});
