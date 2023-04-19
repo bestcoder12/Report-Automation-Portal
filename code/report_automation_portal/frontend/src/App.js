@@ -1,8 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import { Login } from './Components/Login';
 import { Dashboard } from './Components/Dashboard';
@@ -17,20 +13,13 @@ function App() {
     <Router>
       <div>
         <Routes>
-          <Route path="/login" element={<Login />}>
-          </Route>
-          <Route path="/dashboard" element={<Dashboard />}>
-          </Route>
-          <Route path="/addReport" element={<AddReport />}>
-          </Route>
-          <Route path="/editReport" element={<EditReport/>}>
-          </Route>
-          <Route path="/manageUsers" element={<ManageUsers />}>
-          </Route>
-          <Route path="/ChangePassword" element={<ChangePassword />}>
-          </Route>
-          <Route path="/logout" element={<Logout />}>
-          </Route>
+          <Route path="/login" element={<Login />}></Route>
+          <Route path="/dashboard" element={<Dashboard />}></Route>
+          <Route path="/addReport" element={<AddReport />}></Route>
+          <Route path="/editReport" element={<EditReport />}></Route>
+          <Route path="/manageUsers" element={<ManageUsers />}></Route>
+          <Route path="/ChangePassword" element={<ChangePassword />}></Route>
+          <Route path="/logout" element={<Logout />}></Route>
         </Routes>
       </div>
     </Router>
