@@ -2,8 +2,10 @@ import * as dotenv from 'dotenv';
 import session from 'express-session';
 import express from 'express';
 import multer from 'multer';
+import cors from 'cors';
 import validatePass from './auth/validatePass.js';
 import chkCleanFile from './reportProc/chkCleanFile.js';
+import { sessionStore } from '../middleware/database.js';
 import classifyOperation from './reportProc/classifyOperation.js';
 
 const storage = multer.diskStorage({
@@ -21,18 +23,24 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 dotenv.config();
-// import cors from "cors";
-// import sessionStore from "../middleware/database.js"
 
 const makeApp = async (userFunc, reportFunc) => {
   const app = express();
   app.use(express.json());
+  app.use(
+    cors({
+      origin: 'http://localhost:3000',
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+    })
+  );
 
   app.use(
     session({
       key: process.env.SESSION_KEY,
       secret: process.env.SESSION_SECRET,
-      // store: sessionStore,
+      store: sessionStore,
       resave: true,
       saveUninitialized: false,
     })
@@ -118,8 +126,8 @@ const makeApp = async (userFunc, reportFunc) => {
       detailsMesg = { message: 'User does not exist.' };
       res.status(detailsSts).json(detailsMesg);
     }
-    // if (userFunc.chkAdmin(req.session.user))
-    if (userFunc.chkAdmin(req.body.username)) {
+    if (userFunc.chkAdmin(req.session.user)) {
+      // if (userFunc.chkAdmin(req.body.username)) {
       [detailsSts, detailsMesg] = await userFunc.getUserDetails(
         req.body.username
       );
@@ -138,35 +146,37 @@ const makeApp = async (userFunc, reportFunc) => {
       updtMesg = { message: 'User does not exist.' };
       // res.status(updtSts).json(updtMesg);
     }
-    // if ((await userFunc.getUserType(req.session.user)).toLowerCase() == "admin") {
-    else if (await userFunc.chkAdmin(req.body.username)) {
-      /*  if (
+    if (
+      (await userFunc.getUserType(req.session.user)).toLowerCase() === 'admin'
+    ) {
+      // else if (await userFunc.chkAdmin(req.body.username)) {
+      if (
         req.body.username !== req.session.user &&
         !userFunc.chkAdmin(req.body.username)
-      ) { */
-      [updtSts, updtMesg] = await userFunc.modUserByAdmin(
-        req.body.username,
-        req.body.password,
-        req.body.usertype,
-        req.body.userrole
-      );
-      /* }
-      else {
+      ) {
+        [updtSts, updtMesg] = await userFunc.modUserByAdmin(
+          req.body.username,
+          req.body.password,
+          req.body.usertype,
+          req.body.userrole
+        );
+      } else {
         updtMesg = { message: 'The change to other user is not allowed.' };
-      } */
-      // if (req.body.username === req.session.user) {
-    } else if (
+      }
+      if (req.body.username === req.session.user) {
+        /*  } else if (
       (await userFunc.getUserType(req.body.username)).toLowerCase() ===
       'regular'
-    ) {
-      [updtSts, updtMesg] = await userFunc.modUserByRegular(
-        req.body.username,
-        req.body.password
-      );
-    } else {
-      updtMesg = { message: 'Could not perform operation' };
+      ) { */
+        [updtSts, updtMesg] = await userFunc.modUserByRegular(
+          req.body.username,
+          req.body.password
+        );
+      } else {
+        updtMesg = { message: 'Could not perform operation' };
+      }
+      res.status(updtSts).json(updtMesg);
     }
-    res.status(updtSts).json(updtMesg);
   });
 
   app.delete('/users/delete-user', async (req, res) => {
@@ -175,9 +185,8 @@ const makeApp = async (userFunc, reportFunc) => {
     const userExist = await userFunc.checkUserExists(req.body.username);
     if (!userExist) {
       delMesg = { message: 'User does not exist.' };
-    }
-    // else if (userFunc.getUserType(req.session.user)) {
-    else if (await userFunc.chkAdmin(req.body.username)) {
+    } else if (userFunc.getUserType(req.session.user)) {
+      // else if (await userFunc.chkAdmin(req.body.username)) {
       [delSts, delMesg] = await userFunc.deleteUser(req.body.username);
     } else {
       delMesg = { message: 'Could not perform operation' };
@@ -299,10 +308,11 @@ const makeApp = async (userFunc, reportFunc) => {
     res.status(genSts).json(genMesg);
   });
 
-  app.use((err, req, res) => {
+  app.use((err, req, res, next) => {
     console.log(err);
     res.status(500).send('Something broke');
     console.log('This is the rejected field ->', err.field);
+    next();
   });
 
   return app;

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import './LoginStyle.css';
+import loginAuth from './LoginAuth.js';
 
-export default function Login() {
+export default async function Login() {
   const [username, setUsername] = useState('');
   const [passwrd, setPasswrd] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -13,6 +14,7 @@ export default function Login() {
   const togglePassword = () => {
     setShowPassword(!showPassword);
   };
+  await loginAuth();
 
   return (
     <>
@@ -20,7 +22,7 @@ export default function Login() {
       <div className="container">
         <div className="wrapper">
           <div id="login-heading">Login</div>
-          <form action="" method="POST" onSubmit={checkCred}>
+          <form action="" method="POST" onSubmit={await checkCred}>
             <div className="login-row">
               <label htmlFor="username">
                 Username
