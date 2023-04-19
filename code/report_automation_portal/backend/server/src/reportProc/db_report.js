@@ -39,12 +39,12 @@ const reportOps = async (db) => {
   const chkReportExists = async (reportId) => {
     const reportExistQuery =
       'SELECT EXISTS (SELECT 1 FROM file_loc WHERE report_id = ?);';
-    const resReportExist = db.query(reportExistQuery, [reportId]);
+    const resReportExist = await db.query(reportExistQuery, [reportId]);
     const reportExist = Object.values([resReportExist][0][0])[0];
     return reportExist !== 0;
   };
 
-  const getJsonFromXlsx = (filePath, fileHeaders) => {
+  const getJsonFromXLSX = (filePath, fileHeaders) => {
     const workbook = XLSX.readFile(filePath);
     const sheetNameList = workbook.SheetNames;
     const jsonData = XLSX.utils.sheet_to_json(
@@ -57,6 +57,17 @@ const reportOps = async (db) => {
       }
     );
     return jsonData.slice(4, -2);
+  };
+
+  const storeDataAsXLSX = async (reportDate, storeData) => {
+    const dataWorkSheet = XLSX.utils.json_to_sheet(storeData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, dataWorkSheet, 'Sheet1');
+    const filePath = `uploads/report_${reportDate.getDate()}-${
+      reportDate.getMonth() + 1
+    }-${reportDate.getFullYear()}_${Math.round(Math.random())}.xlsx`;
+    XLSX.writeFile(workbook, filePath);
+    return [200, { message: 'File stored to successfully.' }];
   };
 
   const getGPCode = async (gpName, blockName) => {
@@ -100,7 +111,7 @@ const reportOps = async (db) => {
       'OLT AVAILABILITY(%)',
       'PHASE',
     ];
-    const actData = getJsonFromXlsx(reportFile.path, reportHeaders);
+    const actData = getJsonFromXLSX(reportFile.path, reportHeaders);
     const storeOltMonthlyQuery =
       'INSERT INTO olt_monthly VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
 
@@ -160,7 +171,7 @@ const reportOps = async (db) => {
       'OWNER',
     ];
     let retVal;
-    const actData = getJsonFromXlsx(reportFile.path, reportHeaders);
+    const actData = getJsonFromXLSX(reportFile.path, reportHeaders);
     const storeOltNetQuery =
       'INSERT INTO olt_net_provider VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
     await Promise.all(
@@ -198,13 +209,35 @@ const reportOps = async (db) => {
     return retVal;
   };
 
+  const storeOltStatus = async (reportId, storeData) => {
+    const storeOltStatusQuery = 'INSERT INTO olt_status VALUES (?,?,?,?,?,?)';
+    let resStoreOltStatus;
+    let retVal;
+    await Promise.all(
+      storeData.map(async (rowData) => {
+        resStoreOltStatus = await db.query(
+          storeOltStatusQuery,
+          [reportId].concat(Object.values(rowData))
+        );
+        if (resStoreOltStatus.affectedRows !== [1]) {
+          retVal = [
+            500,
+            { message: 'The data could not be inserted into the database.' },
+          ];
+        }
+        retVal = [200, { message: 'The data was uploaded successfully.' }];
+      })
+    );
+    return retVal;
+  };
+
   const fetchReport = async (reportType, reportId) => {
     const fetchQuery = 'SELECT * FROM ?? WHERE report_id = ?';
     const [resFetchQuery] = await db.query(fetchQuery, [reportType, reportId]);
     return [200, resFetchQuery];
   };
 
-  const genOltStatus = async (reportType, reportId) => {
+  const genOltStatus = async (reportId) => {
     const genOltStatusQuery = `WITH unreach_olt AS 
     (
       SELECT  
@@ -259,8 +292,22 @@ const reportOps = async (db) => {
     GROUP BY percent_olt_up.report_id, percent_olt_up.district
     HAVING percent_olt_up.report_id = ?;`;
 
-    console.log(genOltStatusQuery, reportId, reportType);
-    // const resGenOltStatus = await db.query()
+    const [resGenOltStatus] = await db.query(genOltStatusQuery, [
+      reportId,
+      reportId,
+      reportId,
+      reportId,
+    ]);
+    let resStoreOltStatus = await storeOltStatus(reportId, resGenOltStatus);
+    if (resStoreOltStatus[0] !== 200) {
+      return resStoreOltStatus;
+    }
+    const reportDate = new Date();
+    resStoreOltStatus = await storeDataAsXLSX(reportDate, resGenOltStatus);
+    if (resStoreOltStatus[0] !== 200) {
+      return resStoreOltStatus;
+    }
+    return [200, resGenOltStatus];
   };
 
   return {

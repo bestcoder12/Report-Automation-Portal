@@ -74,7 +74,7 @@ const classifyOperation = async (
     switch (reportType) {
       case 'olt-status':
         // reportLoc = 'olt_status';
-        retVal = await reportFunc.genOltStatus(reportType, reportId);
+        retVal = await reportFunc.genOltStatus(reportId);
         break;
       case 'ont-status':
         // reportLoc = 'ont_status';
