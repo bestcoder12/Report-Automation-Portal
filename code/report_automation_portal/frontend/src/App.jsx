@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import { Login } from './Components/Login';
-import { Dashboard } from './Components/Dashboard';
-import { AddReport } from './Components/AddReport';
-import { EditReport } from './Components/EditReport';
-import { ManageUsers } from './Components/ManageUsers';
-import { ChangePassword } from './Components/ChangePassword';
-import { Logout } from './Components/Logout';
+import Login from './Components/Login.jsx';
+import Dashboard from './Components/Dashboard.jsx';
+import AddReport from './Components/AddReport.jsx';
+import EditReport from './Components/EditReport.jsx';
+import ManageUsers from './Components/ManageUsers.jsx';
+import ChangePassword from './Components/ChangePassword.jsx';
+import Logout from './Components/Logout.jsx';
 
 function App() {
   return (
