@@ -204,6 +204,58 @@ const reportOps = async (db) => {
     return [200, resFetchQuery];
   };
 
+  const genOltStatus = async (reportType, reportId) => {
+    const genOltStatusQuery = `WITH unreach_olt AS 
+    (
+      SELECT 
+        report_id, 
+        district, 
+        SUM(IF(olt_state LIKE '%UNREACHABLE', 1, 0)) AS UNREACHABLE 
+      FROM olt_net_provider
+      GROUP BY district
+    ), up_olt AS
+    (
+      SELECT 
+        report_id, 
+        district, 
+        SUM(IF(olt_state LIKE '%UP', 1, 0)) AS UP 
+      FROM olt_net_provider 
+      GROUP BY district
+    ), total_olt AS
+    (
+      SELECT 
+        up_olt.report_id,
+        up_olt.district, 
+        unreach_olt.unreachable, 
+        up_olt.up, 
+        (unreach_olt.unreachable +  up_olt.up) AS grand_total 
+      FROM up_olt
+      JOIN unreach_olt
+      ON up_olt.district = unreach_olt.district
+        AND up_olt.report_id = unreach_olt.report_id
+    ), percent_olt_up AS
+    ( 
+      SELECT 
+        total_olt.report_id,
+        total_olt.district,
+        total_olt.unreachable,
+        total_olt.up,
+        total_olt.grand_total,
+        ROUND(((total_olt.up / total_olt.grand_total) * 100),2) AS perc_up
+      FROM total_olt
+    ) SELECT
+      percent_olt_up.district, 
+      percent_olt_up.unreachable, 
+      percent_olt_up.up, 
+      percent_olt_up.grand_total, 
+      percent_olt_up.perc_up 
+    FROM percent_olt_up
+    JOIN olt_net_provider ON percent_olt_up.report_id = olt_net_provider.report_id
+    WHERE olt_net_provider.report_id = ?;`;
+
+    console.log(reportType, reportId, genOltStatusQuery);
+  };
+
   return {
     getReportId,
     chkReportExists,
@@ -211,6 +263,7 @@ const reportOps = async (db) => {
     storeOltMonthly,
     storeOltNet,
     fetchReport,
+    genOltStatus,
   };
 };
 

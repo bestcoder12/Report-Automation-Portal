@@ -23,7 +23,6 @@ const upload = multer({ storage });
 dotenv.config();
 // import cors from "cors";
 // import sessionStore from "../middleware/database.js"
-// import bcrypt from "bcrypt";
 
 const makeApp = async (userFunc, reportFunc) => {
   const app = express();
@@ -243,7 +242,7 @@ const makeApp = async (userFunc, reportFunc) => {
     }
   );
 
-  app.get('/reports/fetch-reports', async (req, res) => {
+  app.get('/reports/fetch-report', async (req, res) => {
     let ftchSts = 400;
     let ftchMesg = { '': '' };
     const reportId = await reportFunc.getReportId(
@@ -268,6 +267,36 @@ const makeApp = async (userFunc, reportFunc) => {
     }
 
     res.status(ftchSts).json(ftchMesg);
+  });
+
+  app.get('/reports/generate-report', async (req, res) => {
+    let genSts = 400;
+    let genMesg = { '': '' };
+
+    const reportId = await reportFunc.getReportId(
+      req.body.type,
+      req.body.date,
+      req.body.sessn
+    );
+    const resReportExists = await reportFunc.chkReportExists(reportId);
+    if (resReportExists) {
+      [genSts, genMesg] = await classifyOperation(
+        undefined,
+        req.body.type,
+        reportId,
+        'fetch',
+        reportFunc
+      );
+    } else {
+      [genSts, genMesg] = await classifyOperation(
+        undefined,
+        req.body.type,
+        reportId,
+        'generate',
+        reportFunc
+      );
+    }
+    res.status(genSts).json(genMesg);
   });
 
   app.use((err, req, res) => {

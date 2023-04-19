@@ -33,6 +33,7 @@ const classifyOperation = async (
       case 'aging-olt-unreach':
         break;
       default:
+        retVal = [404, { message: 'The report type does not exist.' }];
     }
   } else if (opType === 'fetch') {
     let reportLoc;
@@ -54,16 +55,37 @@ const classifyOperation = async (
       case 'mismatch-ont':
         break;
       case 'olt-status':
+        reportLoc = 'olt_status';
+        retVal = await reportFunc.fetchReport(reportLoc, reportId);
         break;
       case 'ont-status':
+        reportLoc = 'ont_status';
+        retVal = await reportFunc.fetchReport(reportLoc, reportId);
         break;
-      case 'mark-for-delete':
+      case 'mark-for-del':
         break;
       case 'loc-config-pending':
         break;
-      case 'aging-olt-unreach':
+      default:
+        retVal = [404, { message: 'The report type does not exist.' }];
+    }
+  } else if (opType === 'generate') {
+    // let reportLoc;
+    switch (reportType) {
+      case 'olt-status':
+        // reportLoc = 'olt_status';
+        retVal = await reportFunc.genOltStatus(reportType, reportId);
+        break;
+      case 'ont-status':
+        // reportLoc = 'ont_status';
+        // retVal = await reportFunc.genReport();
+        break;
+      case 'mark-for-del':
+        break;
+      case 'loc-config-pending':
         break;
       default:
+        retVal = [404, { message: 'The report type does not exist.' }];
     }
   }
   return retVal;
