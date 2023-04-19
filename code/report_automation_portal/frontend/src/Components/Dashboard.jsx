@@ -1,7 +1,6 @@
-import React from 'react';
-import { SideBar } from './SideBar';
+import SideBar from './SideBar.jsx';
 
-export const Dashboard = () => {
+export default function Dashboard() {
   return (
     <>
       <SideBar />
@@ -11,4 +10,4 @@ export const Dashboard = () => {
       </div>
     </>
   );
-};
+}

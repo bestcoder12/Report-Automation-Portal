@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { SideBar } from './SideBar';
+import { useState } from 'react';
 import Calendar from 'react-calendar';
-import '../../node_modules/react-calendar/dist/Calendar.css';
+import SideBar from './SideBar.jsx';
+import 'react-calendar/dist/Calendar.css';
 
-export const AddReport = () => {
+export default function AddReport() {
   const [value, onChange] = useState(new Date());
   return (
     <>
@@ -14,4 +14,4 @@ export const AddReport = () => {
       </div>
     </>
   );
-};
+}
