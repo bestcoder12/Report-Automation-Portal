@@ -71,7 +71,7 @@ const makeApp = async (userFunc, reportFunc) => {
           .status(404)
           .send({ message: 'Username incorrect. Please check the username.' });
         // res.redirect("/")
-        // return;
+        return;
       }
 
       let validPass;

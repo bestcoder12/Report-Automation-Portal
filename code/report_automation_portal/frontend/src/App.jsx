@@ -11,7 +11,8 @@ import Logout from './Components/Logout.jsx';
 
 function App() {
   Axios.defaults.withCredentials = true;
-  // const [token, setToken] = useState();
+  /* const [token, setToken] = useState();
+  const [currentUser, setCurrentUser] = useState(null); */
   return (
     <Router>
       <div>

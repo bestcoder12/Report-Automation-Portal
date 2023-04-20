@@ -45,6 +45,7 @@ const userOps = async (db) => {
       [rowUserHash] = await db.query(passHashQuery, [userName]);
     } catch (err) {
       console.error('Could not get the password hash from database.', err);
+      return undefined;
     }
     if (rowUserHash === undefined) {
       return undefined;
@@ -59,6 +60,7 @@ const userOps = async (db) => {
       [resTypeQuery] = await db.query(userTypeQuery, [userName]);
     } catch (err) {
       console.error('Could not get the user type from database.', err);
+      return undefined;
     }
     const userType = Object.values(resTypeQuery[0])[0];
     return userType;
@@ -72,6 +74,7 @@ const userOps = async (db) => {
       [resExistUser] = await db.query(chkExistUser, [userName]);
     } catch (err) {
       console.error('Could not check the existence of user in database.', err);
+      return false;
     }
     const userExist = Object.values([resExistUser][0][0])[0];
     return userExist !== 0;
@@ -94,6 +97,10 @@ const userOps = async (db) => {
       ]);
     } catch (err) {
       console.error('Could not add user to the database.', err);
+      return [
+        500,
+        { message: 'User could not be added due to some database error.' },
+      ];
     }
     if (addMesg[0].affectedRows === 1) {
       retVal = [200, { message: 'User created successfully' }];
@@ -130,6 +137,7 @@ const userOps = async (db) => {
       ]);
     } catch (err) {
       console.error('Could not update user details in database.', err);
+      return retVal;
     }
     if (modResult[0].affectedRows === 1) {
       retVal = [201, { message: 'Details updated successfully.' }];
@@ -155,6 +163,7 @@ const userOps = async (db) => {
       modResult = await db.query(modUserQuery, [newPassHash, userName]);
     } catch (err) {
       console.error('Could not update user details in the database.', err);
+      return retVal;
     }
     if (modResult[0].affectedRows === 1) {
       retVal = [201, { message: 'Details updated successfully.' }];
@@ -171,6 +180,7 @@ const userOps = async (db) => {
       delResult = await db.query(delUserQuery, [userName]);
     } catch (err) {
       console.error('Could not delete the user from database.', err);
+      return [500, { Message: 'User could not be deleted.' }];
     }
     if (delResult[0].affectedRows === 1) {
       return [200, { Message: 'User deleted successfully.' }];
@@ -185,6 +195,10 @@ const userOps = async (db) => {
       [resUserDetails] = await db.query(detailUserQuery, [userName]);
     } catch (err) {
       console.error('Could not get user details from database.', err);
+      return [
+        500,
+        { message: 'Could not find the user or unable to fetch its details.' },
+      ];
     }
     return [200, resUserDetails[0]];
   };

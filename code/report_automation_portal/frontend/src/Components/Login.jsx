@@ -1,28 +1,49 @@
 import { useState } from 'react';
+import { redirect } from 'react-router-dom';
 import './LoginStyle.css';
 import loginAuth from './LoginAuth.js';
 
-export default async function Login() {
+export default function Login() {
   const [username, setUsername] = useState('');
   const [passwrd, setPasswrd] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [failLogin, setFailLogin] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  const corrLogin = () => {
+    if (currentUser) {
+      return redirect('/dashboard');
+    }
+    return redirect('/login');
+  };
 
   const checkCred = async (e) => {
     e.preventDefault();
     const userCred = { username, password: passwrd };
-    const res = await loginAuth(userCred);
-    console.log(res);
+    const response = await loginAuth(userCred);
+    if (response.statusCode === 200) {
+      setCurrentUser(username);
+    } else {
+      setFailLogin(true);
+    }
+    corrLogin();
   };
 
   const togglePassword = () => {
     setShowPassword(!showPassword);
   };
-  await loginAuth();
 
   return (
     <>
       <h1 style={{ textAlign: 'center' }}>Report Automation Portal</h1>
       <div className="container">
+        <div className="wrong-message">
+          {failLogin ? (
+            <p>Wrong username or password. Please check your credentials.</p>
+          ) : (
+            <div />
+          )}
+        </div>
         <div className="wrapper">
           <div id="login-heading">Login</div>
           <form action="" method="POST" onSubmit={checkCred}>
