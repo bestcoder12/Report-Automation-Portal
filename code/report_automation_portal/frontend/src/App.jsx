@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Axios from 'axios';
 import './App.css';
 import Login from './Components/Login.jsx';
 import Dashboard from './Components/Dashboard.jsx';
@@ -9,6 +10,8 @@ import ChangePassword from './Components/ChangePassword.jsx';
 import Logout from './Components/Logout.jsx';
 
 function App() {
+  Axios.defaults.withCredentials = true;
+  // const [token, setToken] = useState();
   return (
     <Router>
       <div>

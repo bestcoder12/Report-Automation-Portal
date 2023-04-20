@@ -17,15 +17,25 @@ const reportOps = async (db) => {
     reportSessn,
     reportPath
   ) => {
-    const reportId = await getReportId(reportType, reportDate, reportSessn);
+    let reportId;
+    try {
+      reportId = await getReportId(reportType, reportDate, reportSessn);
+    } catch (err) {
+      console.error('Could not get reportId from the database.', err);
+    }
     const upldQuery = 'INSERT INTO file_loc VALUES (?, ?,?,?,?);';
-    const resUpldQuery = await db.query(upldQuery, [
-      reportId,
-      reportType,
-      reportDate,
-      reportSessn,
-      reportPath,
-    ]);
+    let resUpldQuery;
+    try {
+      resUpldQuery = await db.query(upldQuery, [
+        reportId,
+        reportType,
+        reportDate,
+        reportSessn,
+        reportPath,
+      ]);
+    } catch (err) {
+      console.error('Could not get upload file to the database.', err);
+    }
     if (resUpldQuery[0].affectedRows !== 1) {
       return [
         500,
@@ -39,13 +49,26 @@ const reportOps = async (db) => {
   const chkReportExists = async (reportId) => {
     const reportExistQuery =
       'SELECT EXISTS (SELECT 1 FROM file_loc WHERE report_id = ?);';
-    const resReportExist = await db.query(reportExistQuery, [reportId]);
+    let resReportExist;
+    try {
+      resReportExist = await db.query(reportExistQuery, [reportId]);
+    } catch (err) {
+      console.error(
+        'Could not check existence of report in the database.',
+        err
+      );
+    }
     const reportExist = Object.values([resReportExist][0][0])[0];
     return reportExist !== 0;
   };
 
   const getJsonFromXLSX = (filePath, fileHeaders) => {
-    const workbook = XLSX.readFile(filePath);
+    let workbook;
+    try {
+      workbook = XLSX.readFile(filePath);
+    } catch (err) {
+      console.error('Could not read the file.', err);
+    }
     const sheetNameList = workbook.SheetNames;
     const jsonData = XLSX.utils.sheet_to_json(
       workbook.Sheets[sheetNameList[0]],
@@ -66,14 +89,23 @@ const reportOps = async (db) => {
     const filePath = `uploads/report_${reportDate.getDate()}-${
       reportDate.getMonth() + 1
     }-${reportDate.getFullYear()}_${Math.round(Math.random())}.xlsx`;
-    XLSX.writeFile(workbook, filePath);
+    try {
+      XLSX.writeFile(workbook, filePath);
+    } catch (err) {
+      console.error('Could not write file to the server.', err);
+    }
     return [200, { message: 'File stored to successfully.' }];
   };
 
   const getGPCode = async (gpName, blockName) => {
     const gpCodeQuery =
       'SELECT gp_code FROM gp_master_list WHERE gp_name=? AND block=?;';
-    const [[resGPCode]] = await db.query(gpCodeQuery, [gpName, blockName]);
+    let resGPCode;
+    try {
+      [[resGPCode]] = await db.query(gpCodeQuery, [gpName, blockName]);
+    } catch (err) {
+      console.error('Could not get GP code from the database.', err);
+    }
     return resGPCode;
   };
 
@@ -121,10 +153,15 @@ const reportOps = async (db) => {
       actData.map(async (rowData) => {
         const gpCode = await getGPCode(rowData['OLT LOCATION'], rowData.BLOCK);
         if (gpCode !== undefined) {
-          const resOltMonthlyQuery = await db.query(
-            storeOltMonthlyQuery,
-            [reportId, gpCode.gp_code].concat(Object.values(rowData))
-          );
+          let resOltMonthlyQuery;
+          try {
+            resOltMonthlyQuery = await db.query(
+              storeOltMonthlyQuery,
+              [reportId, gpCode.gp_code].concat(Object.values(rowData))
+            );
+          } catch (err) {
+            console.error('Could not add row to the database.', err);
+          }
           if (resOltMonthlyQuery.affectedRows !== [1]) {
             retVal = [
               500,
@@ -191,10 +228,14 @@ const reportOps = async (db) => {
               resRowData[dateKey] = dateRowData;
             })
           );
-          resOltNetQuery = await db.query(
-            storeOltNetQuery,
-            [reportId, gpCode.gp_code].concat(Object.values(resRowData))
-          );
+          try {
+            resOltNetQuery = await db.query(
+              storeOltNetQuery,
+              [reportId, gpCode.gp_code].concat(Object.values(resRowData))
+            );
+          } catch (err) {
+            console.error('Could not add row to the database.', err);
+          }
 
           if (resOltNetQuery.affectedRows !== [1]) {
             retVal = [
@@ -215,10 +256,14 @@ const reportOps = async (db) => {
     let retVal;
     await Promise.all(
       storeData.map(async (rowData) => {
-        resStoreOltStatus = await db.query(
-          storeOltStatusQuery,
-          [reportId].concat(Object.values(rowData))
-        );
+        try {
+          resStoreOltStatus = await db.query(
+            storeOltStatusQuery,
+            [reportId].concat(Object.values(rowData))
+          );
+        } catch (err) {
+          console.error('Could not store data to the database.', err);
+        }
         if (resStoreOltStatus.affectedRows !== [1]) {
           retVal = [
             500,
@@ -233,7 +278,12 @@ const reportOps = async (db) => {
 
   const fetchReport = async (reportType, reportId) => {
     const fetchQuery = 'SELECT * FROM ?? WHERE report_id = ?';
-    const [resFetchQuery] = await db.query(fetchQuery, [reportType, reportId]);
+    let resFetchQuery;
+    try {
+      [resFetchQuery] = await db.query(fetchQuery, [reportType, reportId]);
+    } catch (err) {
+      console.error('Could not fetch report from the database.', err);
+    }
     return [200, resFetchQuery];
   };
 
@@ -292,18 +342,32 @@ const reportOps = async (db) => {
     GROUP BY percent_olt_up.report_id, percent_olt_up.district
     HAVING percent_olt_up.report_id = ?;`;
 
-    const [resGenOltStatus] = await db.query(genOltStatusQuery, [
-      reportId,
-      reportId,
-      reportId,
-      reportId,
-    ]);
-    let resStoreOltStatus = await storeOltStatus(reportId, resGenOltStatus);
+    let resGenOltStatus;
+    try {
+      [resGenOltStatus] = await db.query(genOltStatusQuery, [
+        reportId,
+        reportId,
+        reportId,
+        reportId,
+      ]);
+    } catch (err) {
+      console.error('Could not generate the report from the database.', err);
+    }
+    let resStoreOltStatus;
+    try {
+      resStoreOltStatus = await storeOltStatus(reportId, resGenOltStatus);
+    } catch (err) {
+      console.error('Could not store the data to the database.', err);
+    }
     if (resStoreOltStatus[0] !== 200) {
       return resStoreOltStatus;
     }
     const reportDate = new Date();
-    resStoreOltStatus = await storeDataAsXLSX(reportDate, resGenOltStatus);
+    try {
+      resStoreOltStatus = await storeDataAsXLSX(reportDate, resGenOltStatus);
+    } catch (err) {
+      console.error('Could not store the file to the server.', err);
+    }
     if (resStoreOltStatus[0] !== 200) {
       return resStoreOltStatus;
     }

@@ -30,9 +30,10 @@ const makeApp = async (userFunc, reportFunc) => {
   app.use(
     cors({
       origin: 'http://localhost:3000',
-      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      methods: 'GET,PUT,POST,DELETE',
       preflightContinue: false,
       optionsSuccessStatus: 204,
+      credentials: true,
     })
   );
 
@@ -46,11 +47,21 @@ const makeApp = async (userFunc, reportFunc) => {
     })
   );
 
+  app.use((req, res, next) => {
+    req.session.init = 'init';
+    next();
+  });
+
   app.post(
     '/users/login-user',
     express.urlencoded({ extended: false }),
     async (req, res, next) => {
-      const passHash = await userFunc.getPassHash(req.body.username);
+      let passHash;
+      try {
+        passHash = await userFunc.getPassHash(req.body.username);
+      } catch (err) {
+        console.error('Hashing password failed', err);
+      }
       if (passHash === undefined) {
         // User may not exist or typo in username
         console.log(
@@ -60,16 +71,25 @@ const makeApp = async (userFunc, reportFunc) => {
           .status(404)
           .send({ message: 'Username incorrect. Please check the username.' });
         // res.redirect("/")
-        return;
+        // return;
       }
 
-      const validPass = await validatePass(req.body.password, passHash);
+      let validPass;
+      try {
+        validPass = await validatePass(req.body.password, passHash);
+      } catch (err) {
+        console.error('Validating password failed', err);
+      }
       if (validPass) {
-        req.session.regenerate((err) => {
+        req.session.regenerate(async (err) => {
           if (err) next(err);
           req.session.validSession = true;
           req.session.user = req.body.username;
-          req.session.utype = userFunc.getUserType(req.body.username);
+          try {
+            req.session.utype = await userFunc.getUserType(req.body.username);
+          } catch (error) {
+            console.error('Could not get user type for session', error);
+          }
           req.session.save(() => {
             if (err) return next(err);
             // res.redirect("/Dashboard")
@@ -89,7 +109,12 @@ const makeApp = async (userFunc, reportFunc) => {
     let addSts = 400;
     let addMesg = { '': '' };
 
-    const userExist = await userFunc.checkUserExists(req.body.username);
+    let userExist;
+    try {
+      userExist = await userFunc.checkUserExists(req.body.username);
+    } catch (err) {
+      console.error('Could not fetch user existence.', err);
+    }
     if (userExist) {
       addMesg = { message: 'User already exists.' };
     } else if (
@@ -107,13 +132,16 @@ const makeApp = async (userFunc, reportFunc) => {
           'Password strength criterion not fulfilled. Please add Symbols, Upper and lower case letters.',
       };
     } else {
-      console.log(req.body);
-      [addSts, addMesg] = await userFunc.addUser(
-        req.body.username,
-        req.body.password,
-        req.body.usertype,
-        req.body.userrole
-      );
+      try {
+        [addSts, addMesg] = await userFunc.addUser(
+          req.body.username,
+          req.body.password,
+          req.body.usertype,
+          req.body.userrole
+        );
+      } catch (err) {
+        console.error('Could not add the user', err);
+      }
     }
     res.status(addSts).json(addMesg);
   });
@@ -121,12 +149,24 @@ const makeApp = async (userFunc, reportFunc) => {
   app.get('/users/details-user', async (req, res) => {
     let detailsSts = 404;
     let detailsMesg = { '': '' };
-    const userExist = await userFunc.checkUserExists(req.body.username);
+
+    let userExist;
+    try {
+      userExist = await userFunc.checkUserExists(req.body.username);
+    } catch (err) {
+      console.error('Could not fetch user existence.', err);
+    }
     if (!userExist) {
       detailsMesg = { message: 'User does not exist.' };
       res.status(detailsSts).json(detailsMesg);
     }
-    if (userFunc.chkAdmin(req.session.user)) {
+    let isAdmin;
+    try {
+      isAdmin = userFunc.chkAdmin(req.session.user);
+    } catch (err) {
+      console.error('Could not check if user admin or not.', err);
+    }
+    if (isAdmin) {
       // if (userFunc.chkAdmin(req.body.username)) {
       [detailsSts, detailsMesg] = await userFunc.getUserDetails(
         req.body.username
@@ -141,37 +181,56 @@ const makeApp = async (userFunc, reportFunc) => {
     // Also check for admin having same username as req
     let updtSts = 404;
     let updtMesg = { '': '' };
-    const userExist = await userFunc.checkUserExists(req.body.username);
+    let userExist;
+    try {
+      userExist = await userFunc.checkUserExists(req.body.username);
+    } catch (err) {
+      console.error('Could not fetch user existence.', err);
+    }
     if (!userExist) {
       updtMesg = { message: 'User does not exist.' };
       // res.status(updtSts).json(updtMesg);
     }
-    if (
-      (await userFunc.getUserType(req.session.user)).toLowerCase() === 'admin'
-    ) {
+    let isAdmin;
+    try {
+      await userFunc.chkAdmin(req.session.user);
+    } catch (err) {
+      console.error('Could not check if user is admin or not.', err);
+    }
+
+    if (isAdmin) {
       // else if (await userFunc.chkAdmin(req.body.username)) {
-      if (
-        req.body.username !== req.session.user &&
-        !userFunc.chkAdmin(req.body.username)
-      ) {
-        [updtSts, updtMesg] = await userFunc.modUserByAdmin(
-          req.body.username,
-          req.body.password,
-          req.body.usertype,
-          req.body.userrole
-        );
+      isAdmin = await userFunc.chkAdmin(req.body.username);
+      if (req.body.username !== req.session.user && !isAdmin) {
+        try {
+          [updtSts, updtMesg] = await userFunc.modUserByAdmin(
+            req.body.username,
+            req.body.password,
+            req.body.usertype,
+            req.body.userrole
+          );
+        } catch (err) {
+          console.error('Could not update user by admin.', err);
+        }
       } else {
         updtMesg = { message: 'The change to other user is not allowed.' };
       }
-      if (req.body.username === req.session.user) {
+      if (
+        req.body.username === req.session.user &&
+        req.session.utype.toLowerCase() === 'regular'
+      ) {
         /*  } else if (
       (await userFunc.getUserType(req.body.username)).toLowerCase() ===
       'regular'
       ) { */
-        [updtSts, updtMesg] = await userFunc.modUserByRegular(
-          req.body.username,
-          req.body.password
-        );
+        try {
+          [updtSts, updtMesg] = await userFunc.modUserByRegular(
+            req.body.username,
+            req.body.password
+          );
+        } catch (err) {
+          console.error('Could not update user by regular user.', err);
+        }
       } else {
         updtMesg = { message: 'Could not perform operation' };
       }
@@ -182,12 +241,21 @@ const makeApp = async (userFunc, reportFunc) => {
   app.delete('/users/delete-user', async (req, res) => {
     let delSts = 404;
     let delMesg = { '': '' };
-    const userExist = await userFunc.checkUserExists(req.body.username);
+    let userExist;
+    try {
+      userExist = await userFunc.checkUserExists(req.body.username);
+    } catch (err) {
+      console.error('Could not check existence of user.', err);
+    }
     if (!userExist) {
       delMesg = { message: 'User does not exist.' };
-    } else if (userFunc.getUserType(req.session.user)) {
+    } else if (req.session.utype) {
       // else if (await userFunc.chkAdmin(req.body.username)) {
-      [delSts, delMesg] = await userFunc.deleteUser(req.body.username);
+      try {
+        [delSts, delMesg] = await userFunc.deleteUser(req.body.username);
+      } catch (err) {
+        console.error('Could not delete the user.', err);
+      }
     } else {
       delMesg = { message: 'Could not perform operation' };
     }
@@ -211,7 +279,12 @@ const makeApp = async (userFunc, reportFunc) => {
     async (req, res) => {
       let upldSts = 400;
       let upldMesg = { '': '' };
-      const resCleanFile = await chkCleanFile(req.file);
+      let resCleanFile;
+      try {
+        resCleanFile = await chkCleanFile(req.file);
+      } catch (err) {
+        console.error('Could not check if file is clean.', err);
+      }
       if (resCleanFile === 1) {
         upldSts = 400;
         upldMesg = {
@@ -224,27 +297,41 @@ const makeApp = async (userFunc, reportFunc) => {
           mesage: `The file ${req.file.originalname} is infected please check the file.`,
         };
       } else {
-        const tempDate = new Date().toISOString();
+        /* const tempDate = new Date().toISOString();
         const tempDate2 = new Date(tempDate);
         const mySQLDateString = tempDate2
           .toJSON()
           .slice(0, 19)
+          .replace('T', ' '); */
+        const mySQLDateString = req.body.date
+          .toJSON()
+          .slice(0, 19)
           .replace('T', ' ');
         let reportId;
-        [upldSts, upldMesg, reportId] = await reportFunc.storeReportToServer(
-          req.body.type,
-          mySQLDateString,
-          req.body.sessn,
-          req.file.path
-        );
-
-        [upldSts, upldMesg] = await classifyOperation(
-          req.file,
-          req.body.type,
-          reportId,
-          'store',
-          reportFunc
-        );
+        try {
+          [upldSts, upldMesg, reportId] = await reportFunc.storeReportToServer(
+            req.body.type,
+            mySQLDateString,
+            req.body.sessn,
+            req.file.path
+          );
+        } catch (err) {
+          console.error('Could not store the file in the server.', err);
+        }
+        try {
+          [upldSts, upldMesg] = await classifyOperation(
+            req.file,
+            req.body.type,
+            reportId,
+            'store',
+            reportFunc
+          );
+        } catch (err) {
+          console.error(
+            'Could not store the classify/store data in database.',
+            err
+          );
+        }
       }
       console.log(upldSts, upldMesg);
       res.status(upldSts).json(upldMesg);
@@ -254,25 +341,42 @@ const makeApp = async (userFunc, reportFunc) => {
   app.get('/reports/fetch-report', async (req, res) => {
     let ftchSts = 400;
     let ftchMesg = { '': '' };
-    const reportId = await reportFunc.getReportId(
-      req.body.type,
-      req.body.date,
-      req.body.sessn
-    );
-    const resReportExists = await reportFunc.chkReportExists(reportId);
+    let reportId;
+    try {
+      reportId = await reportFunc.getReportId(
+        req.body.type,
+        req.body.date,
+        req.body.sessn
+      );
+    } catch (err) {
+      console.error('Could not get reportId.', err);
+    }
+    let resReportExists;
+    try {
+      resReportExists = await reportFunc.chkReportExists(reportId);
+    } catch (err) {
+      console.error('Could not check existence of report.', err);
+    }
     if (!resReportExists) {
       [ftchSts, ftchMesg] = [
         404,
         { message: `The report being queried does't exist.` },
       ];
     } else {
-      [ftchSts, ftchMesg] = await classifyOperation(
-        undefined,
-        req.body.type,
-        reportId,
-        'fetch',
-        reportFunc
-      );
+      try {
+        [ftchSts, ftchMesg] = await classifyOperation(
+          undefined,
+          req.body.type,
+          reportId,
+          'fetch',
+          reportFunc
+        );
+      } catch (err) {
+        console.error(
+          'Could not fetch the classify/fetch data in database.',
+          err
+        );
+      }
     }
 
     res.status(ftchSts).json(ftchMesg);
@@ -281,29 +385,53 @@ const makeApp = async (userFunc, reportFunc) => {
   app.get('/reports/generate-report', async (req, res) => {
     let genSts = 400;
     let genMesg = { '': '' };
+    let reportId;
 
-    const reportId = await reportFunc.getReportId(
-      req.body.type,
-      req.body.date,
-      req.body.sessn
-    );
-    const resReportExists = await reportFunc.chkReportExists(reportId);
+    try {
+      reportId = await reportFunc.getReportId(
+        req.body.type,
+        req.body.date,
+        req.body.sessn
+      );
+    } catch (err) {
+      console.error('Could not get reportId.', err);
+    }
+    let resReportExists;
+    try {
+      resReportExists = await reportFunc.chkReportExists(reportId);
+    } catch (err) {
+      console.error('Could not check existence of report.', err);
+    }
     if (resReportExists) {
-      [genSts, genMesg] = await classifyOperation(
-        undefined,
-        req.body.type,
-        reportId,
-        'fetch',
-        reportFunc
-      );
+      try {
+        [genSts, genMesg] = await classifyOperation(
+          undefined,
+          req.body.type,
+          reportId,
+          'fetch',
+          reportFunc
+        );
+      } catch (err) {
+        console.error(
+          'Could not fetch the classify/fetch data in database.',
+          err
+        );
+      }
     } else {
-      [genSts, genMesg] = await classifyOperation(
-        undefined,
-        req.body.type,
-        reportId,
-        'generate',
-        reportFunc
-      );
+      try {
+        [genSts, genMesg] = await classifyOperation(
+          undefined,
+          req.body.type,
+          reportId,
+          'generate',
+          reportFunc
+        );
+      } catch (err) {
+        console.error(
+          'Could not generate the classify/generate data in database.',
+          err
+        );
+      }
     }
     res.status(genSts).json(genMesg);
   });

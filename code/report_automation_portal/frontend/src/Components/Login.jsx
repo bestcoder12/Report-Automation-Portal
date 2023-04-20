@@ -7,8 +7,11 @@ export default async function Login() {
   const [passwrd, setPasswrd] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const checkCred = () => {
-    console.log({ username, password: passwrd });
+  const checkCred = async (e) => {
+    e.preventDefault();
+    const userCred = { username, password: passwrd };
+    const res = await loginAuth(userCred);
+    console.log(res);
   };
 
   const togglePassword = () => {
@@ -22,7 +25,7 @@ export default async function Login() {
       <div className="container">
         <div className="wrapper">
           <div id="login-heading">Login</div>
-          <form action="" method="POST" onSubmit={await checkCred}>
+          <form action="" method="POST" onSubmit={checkCred}>
             <div className="login-row">
               <label htmlFor="username">
                 Username
