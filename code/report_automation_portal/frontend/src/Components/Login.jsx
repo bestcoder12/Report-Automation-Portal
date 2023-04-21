@@ -1,21 +1,21 @@
-import { useState } from 'react';
-import { redirect } from 'react-router-dom';
+import { useState, useContext } from 'react';
+// import { redirect } from 'react-router-dom';
 import './LoginStyle.css';
 import loginAuth from './LoginAuth.js';
+import { UserContextProvider } from './UserContext';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [passwrd, setPasswrd] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [failLogin, setFailLogin] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-
-  const corrLogin = () => {
+  const { setCurrentUser } = useContext(UserContextProvider);
+  /* const corrLogin = () => {
     if (currentUser) {
       return redirect('/dashboard');
     }
     return redirect('/login');
-  };
+  }; */
 
   const checkCred = async (e) => {
     e.preventDefault();
@@ -26,7 +26,10 @@ export default function Login() {
     } else {
       setFailLogin(true);
     }
-    corrLogin();
+    /* if (currentUser) {
+      console.log(currentUser);
+    } */
+    // corrLogin();
   };
 
   const togglePassword = () => {
