@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import sendFile from './SendFile.js';
-import SideBar from './SideBar.jsx';
+import ResSideBar from './SideBar.jsx';
 
 export default function AddReport() {
   const [value, onChange] = useState(new Date());
@@ -23,7 +23,7 @@ export default function AddReport() {
 
   return (
     <>
-      <SideBar />
+      <ResSideBar />
       <div>Add Report</div>
       <div id="upload-form">
         <form action="" method="POST" onSubmit={uploadFile}>

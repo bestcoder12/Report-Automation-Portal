@@ -2,14 +2,16 @@ import { useState, useContext } from 'react';
 // import { redirect } from 'react-router-dom';
 import './LoginStyle.css';
 import loginAuth from './LoginAuth.js';
-import { UserContextProvider } from './UserContext';
+import UserContext from './UserContext.jsx';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [passwrd, setPasswrd] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [failLogin, setFailLogin] = useState(false);
-  const { setCurrentUser } = useContext(UserContextProvider);
+  const value = useContext(UserContext);
+  const { setCurrentUser, setUserType, failLogin, setFailLogin } = value;
+  // console.log(currentUser, userType, setCurrentUser, setUserType);
+  console.log(typeof setUserType);
   /* const corrLogin = () => {
     if (currentUser) {
       return redirect('/dashboard');
@@ -21,6 +23,7 @@ export default function Login() {
     e.preventDefault();
     const userCred = { username, password: passwrd };
     const response = await loginAuth(userCred);
+    console.log(response);
     if (response.statusCode === 200) {
       setCurrentUser(username);
     } else {

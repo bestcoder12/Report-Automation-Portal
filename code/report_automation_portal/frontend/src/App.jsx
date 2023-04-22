@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Axios from 'axios';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import './App.css';
 import Login from './Components/Login.jsx';
 import Dashboard from './Components/Dashboard.jsx';
@@ -9,15 +9,27 @@ import EditReport from './Components/EditReport.jsx';
 import ManageUsers from './Components/ManageUsers.jsx';
 import ChangePassword from './Components/ChangePassword.jsx';
 import Logout from './Components/Logout.jsx';
-import { UserContextProvider } from './Components/UserContext.jsx';
+import UserContext from './Components/UserContext.jsx';
 
 function App() {
   Axios.defaults.withCredentials = true;
   const [currentUser, setCurrentUser] = useState(null);
   const [userType, setUserType] = useState(null);
+  const [failLogin, setFailLogin] = useState(true);
+  console.log(currentUser, userType, failLogin);
   return (
-    <UserContextProvider
-      value={{ currentUser, setCurrentUser, userType, setUserType }}
+    <UserContext.Provider
+      value={useMemo(
+        () => ({
+          currentUser,
+          setCurrentUser,
+          userType,
+          setUserType,
+          failLogin,
+          setFailLogin,
+        }),
+        [currentUser, userType, failLogin]
+      )}
     >
       <Router>
         <div>
@@ -32,7 +44,7 @@ function App() {
           </Routes>
         </div>
       </Router>
-    </UserContextProvider>
+    </UserContext.Provider>
   );
 }
 
