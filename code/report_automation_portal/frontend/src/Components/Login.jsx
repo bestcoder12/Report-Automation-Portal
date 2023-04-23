@@ -13,7 +13,6 @@ export default function Login() {
   const { setCurrentUser, setUserType, failLogin, setFailLogin } = value;
 
   const navigate = useNavigate();
-  console.log(typeof setUserType);
 
   const checkCred = async (e) => {
     e.preventDefault();
@@ -22,6 +21,7 @@ export default function Login() {
     console.log(response);
     if (response.statusCode === 200) {
       setCurrentUser(username);
+      setUserType(response.userType);
       return navigate('/dashboard');
     }
     setFailLogin(true);

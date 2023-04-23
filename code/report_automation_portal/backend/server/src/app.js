@@ -82,16 +82,16 @@ const makeApp = async (userFunc, reportFunc) => {
         console.error('Validating password failed', err);
       }
       if (validPass) {
+        try {
+          userType = await userFunc.getUserType(req.body.username);
+        } catch (error) {
+          console.error('Could not get user type for session', error);
+        }
         req.session.regenerate(async (err) => {
           if (err) next(err);
           req.session.validSession = true;
           req.session.user = req.body.username;
-          try {
-            userType = await userFunc.getUserType(req.body.username);
-            req.session.utype = userType;
-          } catch (error) {
-            console.error('Could not get user type for session', error);
-          }
+          req.session.utype = userType;
           req.session.save(() => {
             if (err) return next(err);
             // res.redirect("/Dashboard")
