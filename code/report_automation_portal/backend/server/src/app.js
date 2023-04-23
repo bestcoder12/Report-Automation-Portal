@@ -75,6 +75,7 @@ const makeApp = async (userFunc, reportFunc) => {
       }
 
       let validPass;
+      let userType;
       try {
         validPass = await validatePass(req.body.password, passHash);
       } catch (err) {
@@ -86,7 +87,8 @@ const makeApp = async (userFunc, reportFunc) => {
           req.session.validSession = true;
           req.session.user = req.body.username;
           try {
-            req.session.utype = await userFunc.getUserType(req.body.username);
+            userType = await userFunc.getUserType(req.body.username);
+            req.session.utype = userType;
           } catch (error) {
             console.error('Could not get user type for session', error);
           }
@@ -96,10 +98,10 @@ const makeApp = async (userFunc, reportFunc) => {
             return undefined;
           });
         });
-        res.status(200).json({ message: 'Yay! Logged in.' });
+        res.status(200).json({ message: 'Yay! Logged in.', userType });
       } else {
         req.session.validSession = false;
-        res.status(401).json({ message: 'Oh no. Wrong password' });
+        res.status(401).json({ message: 'Oh no. Wrong password', userType });
         // res.redirect("/Login")
       }
     }
