@@ -1,6 +1,7 @@
 import { useState, useContext } from 'react';
 // import { redirect } from 'react-router-dom';
 import './LoginStyle.css';
+import { useNavigate } from 'react-router-dom';
 import loginAuth from './LoginAuth.js';
 import UserContext from './UserContext.jsx';
 
@@ -10,14 +11,9 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const value = useContext(UserContext);
   const { setCurrentUser, setUserType, failLogin, setFailLogin } = value;
-  // console.log(currentUser, userType, setCurrentUser, setUserType);
+
+  const navigate = useNavigate();
   console.log(typeof setUserType);
-  /* const corrLogin = () => {
-    if (currentUser) {
-      return redirect('/dashboard');
-    }
-    return redirect('/login');
-  }; */
 
   const checkCred = async (e) => {
     e.preventDefault();
@@ -26,13 +22,10 @@ export default function Login() {
     console.log(response);
     if (response.statusCode === 200) {
       setCurrentUser(username);
-    } else {
-      setFailLogin(true);
+      return navigate('/dashboard');
     }
-    /* if (currentUser) {
-      console.log(currentUser);
-    } */
-    // corrLogin();
+    setFailLogin(true);
+    return navigate('/');
   };
 
   const togglePassword = () => {
