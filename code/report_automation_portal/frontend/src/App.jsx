@@ -10,7 +10,6 @@ import EditReport from './Components/EditReport.jsx';
 import GenerateReport from './Components/GenerateReport.jsx';
 import ManageUsers from './Components/ManageUsers.jsx';
 import ChangePassword from './Components/ChangePassword.jsx';
-import Logout from './Components/Logout.jsx';
 import UserContext from './Components/UserContext.jsx';
 import RequireAuth from './Components/RequireAuth.jsx';
 import Unauthorized from './Components/Unauthorized';
@@ -47,7 +46,6 @@ function App() {
               <Route path="/generatereport" element={<GenerateReport />} />
               <Route path="/manageusers" element={<ManageUsers />} />
               <Route path="/changepassword" element={<ChangePassword />} />
-              <Route path="/logout" element={<Logout />} />
             </Route>
 
             <Route element={<RequireAuth allowedRoles={['Uploading']} />}>
@@ -56,14 +54,12 @@ function App() {
               <Route path="/editreport" element={<EditReport />} />
               <Route path="/generatereport" element={<GenerateReport />} />
               <Route path="/changepassword" element={<ChangePassword />} />
-              <Route path="/logout" element={<Logout />} />
             </Route>
 
             <Route element={<RequireAuth allowedRoles={['Regular']} />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/generatereport" element={<GenerateReport />} />
               <Route path="/changepassword" element={<ChangePassword />} />
-              <Route path="/logout" element={<Logout />} />
             </Route>
           </Routes>
         </div>

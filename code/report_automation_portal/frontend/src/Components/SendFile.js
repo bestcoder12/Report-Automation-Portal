@@ -9,13 +9,15 @@ const sendFile = async (formData) => {
     },
     data: formData,
   };
+  console.log(config);
   let res;
   try {
     res = await axios(config);
+    return { statusCode: res.status, data: res.data };
   } catch (err) {
     console.error('Could not upload file.');
+    return { statusCode: err.response.status, data: err.response.data };
   }
-  return { statusCode: res.status, data: res.data };
 };
 
 export default sendFile;

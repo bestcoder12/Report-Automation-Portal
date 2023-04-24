@@ -31,83 +31,85 @@ export default function ResSideBar() {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100%' }}>
-      <IconContext.Provider value={useMemo(() => ({ color: '#fff' }), [])}>
-        <Sidebar
-          className="sidebar-text"
-          style={{ height: '100vh', backgroundColor: '#1a66ff' }}
-        >
-          <Menu>
-            <MenuItem
-              icon={collapsed ? <FaIcons.FaBars /> : <AiIcons.AiOutlineClose />}
-              onClick={() => {
-                collapseSidebar();
-              }}
-              className="sidebar-link toggle-icons sidebar-icon .sidebar-link:hover"
-            />
+    <IconContext.Provider value={useMemo(() => ({ color: '#fff' }), [])}>
+      <Sidebar
+        className="sidebar-text"
+        style={{
+          display: 'flex',
+          height: '100vh',
+          backgroundColor: '#1a66ff',
+        }}
+      >
+        <Menu>
+          <MenuItem
+            icon={collapsed ? <FaIcons.FaBars /> : <AiIcons.AiOutlineClose />}
+            onClick={() => {
+              collapseSidebar();
+            }}
+            className="sidebar-link toggle-icons sidebar-icon .sidebar-link:hover"
+          />
 
+          <MenuItem
+            icon={<AiIcons.AiFillHome />}
+            component={<Link to="/dashboard" />}
+            className="sidebar-link sidebar-icon .sidebar-link:hover"
+          >
+            Dashboard
+          </MenuItem>
+          <SubMenu
+            label="Reports"
+            icon={<HiIcons.HiDocument />}
+            className="sidebar-link sidebar-icon .sidebar-link:hover"
+            style={{ backgroundColor: '#b7cdfb' }}
+          >
             <MenuItem
-              icon={<AiIcons.AiFillHome />}
-              component={<Link to="/dashboard" />}
-              className="sidebar-link sidebar-icon .sidebar-link:hover"
-            >
-              Dashboard
-            </MenuItem>
-            <SubMenu
-              label="Reports"
-              icon={<HiIcons.HiDocument />}
+              icon={<HiIcons.HiDocumentArrowUp />}
+              component={<Link to="/addreport" />}
               className="sidebar-link sidebar-icon .sidebar-link:hover"
               style={{ backgroundColor: '#b7cdfb' }}
             >
-              <MenuItem
-                icon={<HiIcons.HiDocumentArrowUp />}
-                component={<Link to="/addreport" />}
-                className="sidebar-link sidebar-icon .sidebar-link:hover"
-                style={{ backgroundColor: '#b7cdfb' }}
-              >
-                Add Report
-              </MenuItem>
-              <MenuItem
-                icon={<MdIcons.MdEditDocument />}
-                component={<Link to="/editreport" />}
-                className="sdebar-link sidebar-icon .sidebar-link:hover"
-                style={{ backgroundColor: '#b7cdfb' }}
-              >
-                Edit Report
-              </MenuItem>
-              <MenuItem
-                icon={<HiIcons.HiDocumentArrowUp />}
-                component={<Link to="/generatereport" />}
-                className="sidebar-link sidebar-icon .sidebar-link:hover"
-                style={{ backgroundColor: '#b7cdfb' }}
-              >
-                Generate Report
-              </MenuItem>
-            </SubMenu>
-            <MenuItem
-              icon={<FaIcons.FaUsersCog />}
-              component={<Link to="/manageusers" />}
-              className="sidebar-link sidebar-icon .sidebar-link:hover"
-            >
-              Manage Users
+              Add Report
             </MenuItem>
             <MenuItem
-              icon={<MdIcons.MdPassword />}
-              component={<Link to="/changepassword" />}
-              className="sidebar-link sidebar-icon .sidebar-link:hover"
+              icon={<MdIcons.MdEditDocument />}
+              component={<Link to="/editreport" />}
+              className="sdebar-link sidebar-icon .sidebar-link:hover"
+              style={{ backgroundColor: '#b7cdfb' }}
             >
-              Change Password
+              Edit Report
             </MenuItem>
             <MenuItem
-              icon={<MdIcons.MdLogout />}
-              onClick={userLogout}
+              icon={<HiIcons.HiDocumentArrowUp />}
+              component={<Link to="/generatereport" />}
               className="sidebar-link sidebar-icon .sidebar-link:hover"
+              style={{ backgroundColor: '#b7cdfb' }}
             >
-              Logout
+              Generate Report
             </MenuItem>
-          </Menu>
-        </Sidebar>
-      </IconContext.Provider>
-    </div>
+          </SubMenu>
+          <MenuItem
+            icon={<FaIcons.FaUsersCog />}
+            component={<Link to="/manageusers" />}
+            className="sidebar-link sidebar-icon .sidebar-link:hover"
+          >
+            Manage Users
+          </MenuItem>
+          <MenuItem
+            icon={<MdIcons.MdPassword />}
+            component={<Link to="/changepassword" />}
+            className="sidebar-link sidebar-icon .sidebar-link:hover"
+          >
+            Change Password
+          </MenuItem>
+          <MenuItem
+            icon={<MdIcons.MdLogout />}
+            onClick={userLogout}
+            className="sidebar-link sidebar-icon .sidebar-link:hover"
+          >
+            Logout
+          </MenuItem>
+        </Menu>
+      </Sidebar>
+    </IconContext.Provider>
   );
 }

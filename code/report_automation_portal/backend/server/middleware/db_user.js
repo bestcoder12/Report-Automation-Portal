@@ -189,7 +189,8 @@ const userOps = async (db) => {
   };
 
   const getUserDetails = async (userName) => {
-    const detailUserQuery = 'SELECT * FROM user WHERE username=?;';
+    const detailUserQuery =
+      'SELECT username, user_type, user_role FROM user WHERE username=?;';
     let resUserDetails;
     try {
       [resUserDetails] = await db.query(detailUserQuery, [userName]);

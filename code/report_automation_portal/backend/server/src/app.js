@@ -11,12 +11,18 @@ import classifyOperation from './reportProc/classifyOperation.js';
 const storage = multer.diskStorage({
   destination: 'uploads/',
   filename: (req, file, cb) => {
-    const fileDate = new Date();
+    const fileDate = new Date(req.body.date);
+    console.log(
+      fileDate,
+      `report_${fileDate.getDate()}-${
+        fileDate.getMonth() + 1
+      }-${fileDate.getFullYear()}.xlsx`
+    );
     cb(
       null,
       `report_${fileDate.getDate()}-${
         fileDate.getMonth() + 1
-      }-${fileDate.getFullYear()}_${Math.round(Math.random())}.xlsx`
+      }-${fileDate.getFullYear()}.xlsx`
     );
   },
 });
@@ -274,6 +280,7 @@ const makeApp = async (userFunc, reportFunc) => {
       if (err) next(err);
       req.session.regenerate(() => {
         if (err) next(err);
+        res.clearCookie(process.env.SESSION_KEY);
         // res.redirect('/');
       });
     });
@@ -306,39 +313,64 @@ const makeApp = async (userFunc, reportFunc) => {
         /* const tempDate = new Date().toISOString();
         const tempDate2 = new Date(tempDate);
         const mySQLDateString = tempDate2
-          .toJSON()
+          .toJSON() 
           .slice(0, 19)
           .replace('T', ' '); */
-        const mySQLDateString = req.body.date
-          .toJSON()
-          .slice(0, 19)
-          .replace('T', ' ');
         let reportId;
         try {
-          [upldSts, upldMesg, reportId] = await reportFunc.storeReportToServer(
+          reportId = await reportFunc.getReportId(
             req.body.type,
-            mySQLDateString,
-            req.body.sessn,
-            req.file.path
+            req.body.date,
+            req.body.sessn
           );
         } catch (err) {
-          console.error('Could not store the file in the server.', err);
+          console.error('Could not get reportId.', err);
         }
+        let resReportExists;
         try {
-          [upldSts, upldMesg] = await classifyOperation(
-            req.file,
-            req.body.type,
-            reportId,
-            'store',
-            reportFunc
-          );
+          resReportExists = await reportFunc.chkReportExists(reportId);
         } catch (err) {
-          console.error(
-            'Could not store the classify/store data in database.',
-            err
-          );
+          console.error('Could not check existence of report.', err);
+        }
+        if (resReportExists) {
+          [upldSts, upldMesg] = [
+            400,
+            { message: 'The report being added already exists.' },
+          ];
+        } else {
+          const tempDate = new Date(req.body.date);
+          const mySQLDateString = tempDate
+            .toJSON()
+            .slice(0, 19)
+            .replace('T', ' ');
+          try {
+            [upldSts, upldMesg, reportId] =
+              await reportFunc.storeReportToServer(
+                req.body.type,
+                mySQLDateString,
+                req.body.sessn,
+                req.file.path
+              );
+          } catch (err) {
+            console.error('Could not store the file in the server.', err);
+          }
+          try {
+            [upldSts, upldMesg] = await classifyOperation(
+              req.file,
+              req.body.type,
+              reportId,
+              'store',
+              reportFunc
+            );
+          } catch (err) {
+            console.error(
+              'Could not store the classify/store data in database.',
+              err
+            );
+          }
         }
       }
+      console.log(req.file);
       console.log(upldSts, upldMesg);
       res.status(upldSts).json(upldMesg);
     }
