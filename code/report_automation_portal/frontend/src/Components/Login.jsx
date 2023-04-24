@@ -18,10 +18,10 @@ export default function Login() {
     e.preventDefault();
     const userCred = { username, password: passwrd };
     const response = await loginAuth(userCred);
-    console.log(response);
     if (response.statusCode === 200) {
       setCurrentUser(username);
       setUserType(response.data.userType);
+      setFailLogin(false);
       return navigate('/dashboard');
     }
     setFailLogin(true);

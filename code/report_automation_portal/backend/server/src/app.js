@@ -274,7 +274,7 @@ const makeApp = async (userFunc, reportFunc) => {
       if (err) next(err);
       req.session.regenerate(() => {
         if (err) next(err);
-        res.redirect('/');
+        // res.redirect('/');
       });
     });
   });

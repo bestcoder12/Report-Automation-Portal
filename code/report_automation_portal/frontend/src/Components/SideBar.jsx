@@ -5,16 +5,30 @@ import {
   useProSidebar,
   SubMenu,
 } from 'react-pro-sidebar';
-import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { IconContext } from 'react-icons';
 import * as FaIcons from 'react-icons/fa';
 import * as AiIcons from 'react-icons/ai';
 import * as HiIcons from 'react-icons/hi2';
 import * as MdIcons from 'react-icons/md';
+import UserContext from './UserContext.jsx';
+import clrSessn from './ClrSessn.js';
 
 export default function ResSideBar() {
   const { collapseSidebar, collapsed } = useProSidebar();
+
+  const value = useContext(UserContext);
+  const navigate = useNavigate();
+  const { setCurrentUser, setUserType } = value;
+
+  const userLogout = async (e) => {
+    e.preventDefault();
+    setCurrentUser(null);
+    setUserType(null);
+    await clrSessn();
+    return navigate('/');
+  };
 
   return (
     <div style={{ display: 'flex', height: '100%' }}>
@@ -86,7 +100,7 @@ export default function ResSideBar() {
             </MenuItem>
             <MenuItem
               icon={<MdIcons.MdLogout />}
-              component={<Link to="/logout" />}
+              onClick={userLogout}
               className="sidebar-link sidebar-icon .sidebar-link:hover"
             >
               Logout

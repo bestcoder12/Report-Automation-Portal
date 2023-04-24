@@ -9,7 +9,7 @@ export default function RequireAuth({ allowedRoles }) {
   if (value?.userType?.find((role) => allowedRoles?.includes(role))) {
     return <Outlet />;
   }
-  if (!value?.currentUser) {
+  if (value?.currentUser) {
     return <Navigate to="/unauthorized" state={{ from: location }} replace />;
   }
   return <Navigate to="/" state={{ from: location }} replace />;
