@@ -21,7 +21,7 @@ export default function Login() {
     console.log(response);
     if (response.statusCode === 200) {
       setCurrentUser(username);
-      setUserType(response.userType);
+      setUserType(response.data.userType);
       return navigate('/dashboard');
     }
     setFailLogin(true);

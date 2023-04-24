@@ -13,6 +13,7 @@ import ChangePassword from './Components/ChangePassword.jsx';
 import Logout from './Components/Logout.jsx';
 import UserContext from './Components/UserContext.jsx';
 import RequireAuth from './Components/RequireAuth.jsx';
+import Unauthorized from './Components/Unauthorized';
 
 function App() {
   Axios.defaults.withCredentials = true;
@@ -37,9 +38,9 @@ function App() {
       <Router>
         <div>
           <Routes>
-            {/* <Route path="/" element={<Home />}> */}
             <Route path="/" element={<Login />} />
-            <Route element={<RequireAuth />}>
+            <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route element={<RequireAuth allowedRoles={['Admin']} />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/addreport" element={<AddReport />} />
               <Route path="/editreport" element={<EditReport />} />
@@ -48,7 +49,22 @@ function App() {
               <Route path="/changepassword" element={<ChangePassword />} />
               <Route path="/logout" element={<Logout />} />
             </Route>
-            {/* </Route> */}
+
+            <Route element={<RequireAuth allowedRoles={['Uploading']} />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/addreport" element={<AddReport />} />
+              <Route path="/editreport" element={<EditReport />} />
+              <Route path="/generatereport" element={<GenerateReport />} />
+              <Route path="/changepassword" element={<ChangePassword />} />
+              <Route path="/logout" element={<Logout />} />
+            </Route>
+
+            <Route element={<RequireAuth allowedRoles={['Regular']} />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/generatereport" element={<GenerateReport />} />
+              <Route path="/changepassword" element={<ChangePassword />} />
+              <Route path="/logout" element={<Logout />} />
+            </Route>
           </Routes>
         </div>
       </Router>

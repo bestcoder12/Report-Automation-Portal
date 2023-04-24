@@ -98,10 +98,14 @@ const makeApp = async (userFunc, reportFunc) => {
             return undefined;
           });
         });
-        res.status(200).json({ message: 'Yay! Logged in.', userType });
+        res
+          .status(200)
+          .json({ message: 'Yay! Logged in.', userType: [userType] });
       } else {
         req.session.validSession = false;
-        res.status(401).json({ message: 'Oh no. Wrong password', userType });
+        res
+          .status(401)
+          .json({ message: 'Oh no. Wrong password', userType: [userType] });
         // res.redirect("/Login")
       }
     }
