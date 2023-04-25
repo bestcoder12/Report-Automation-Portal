@@ -40,7 +40,6 @@ export default function GenerateReport() {
       date: genDate,
       sessn: reportSession,
     };
-    console.log(genData);
     const response = await getReportData(genData);
     console.log(response);
   };

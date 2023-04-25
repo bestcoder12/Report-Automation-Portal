@@ -73,24 +73,9 @@ const classifyOperation = async (
   } else if (opType === 'generate') {
     // let reportLoc;
     switch (reportType) {
-      case 'olt-status': {
-        const tempArr = reportId.split('$');
-        tempArr[0] = 'olt-net-provider';
-        const tempReportId = tempArr.join('$');
-        const tempReportExists = await reportFunc.chkReportExists(tempReportId);
-        if (!tempReportExists) {
-          retVal = [
-            404,
-            {
-              message:
-                'The report type required for generating the report does not exist.',
-            },
-          ];
-          break;
-        }
-        retVal = await reportFunc.genOltStatus(tempReportId);
+      case 'olt-status':
+        retVal = await reportFunc.genOltStatus(reportId);
         break;
-      }
       case 'ont-status':
         // reportLoc = 'ont_status';
         // retVal = await reportFunc.genReport();

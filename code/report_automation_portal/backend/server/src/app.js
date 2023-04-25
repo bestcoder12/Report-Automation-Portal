@@ -13,17 +13,11 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const splitDate = req.body.date.split('-');
     const fileDate = new Date(splitDate[0], splitDate[1] - 1, splitDate[2]);
-    console.log(
-      fileDate,
-      `report_${req.body.type}_${fileDate.getDate()}-${
-        fileDate.getMonth() + 1
-      }-${fileDate.getFullYear()}.xlsx`
-    );
     cb(
       null,
-      `report_${fileDate.getDate()}-${
+      `report_${req.body.type}_${fileDate.getDate()}-${
         fileDate.getMonth() + 1
-      }-${fileDate.getFullYear()}.xlsx`
+      }-${fileDate.getFullYear()}_${req.body.sessn}.xlsx`
     );
   },
 });

@@ -23,7 +23,7 @@ const reportOps = async (db) => {
     } catch (err) {
       console.error('Could not get reportId from the database.', err);
     }
-    const upldQuery = 'INSERT INTO file_loc VALUES (?, ?,?,?,?);';
+    const upldQuery = 'INSERT INTO file_loc VALUES (?,?,?,?,?);';
     let resUpldQuery;
     try {
       resUpldQuery = await db.query(upldQuery, [
@@ -84,19 +84,18 @@ const reportOps = async (db) => {
     return jsonData.slice(4, -2);
   };
 
-  const storeDataAsXLSX = async (reportDate, storeData) => {
+  const storeDataAsXLSX = async (reportId, storeData) => {
     const dataWorkSheet = XLSX.utils.json_to_sheet(storeData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, dataWorkSheet, 'Sheet1');
-    const filePath = `uploads/report_${reportDate.getDate()}-${
-      reportDate.getMonth() + 1
-    }-${reportDate.getFullYear()}_${Math.round(Math.random())}.xlsx`;
+    const [reportType, reportDate, reportSession] = reportId.split('$');
+    const filePath = `uploads/report_${reportType}_${reportDate}_${reportSession}.xlsx`;
     try {
       XLSX.writeFile(workbook, filePath);
     } catch (err) {
       console.error('Could not write file to the server.', err);
     }
-    return [200, { message: 'File stored to successfully.' }];
+    return [200, { message: 'File stored to successfully.' }, filePath];
   };
 
   const getGPCode = async (gpName, blockName) => {
@@ -253,7 +252,7 @@ const reportOps = async (db) => {
   };
 
   const storeOltStatus = async (reportId, storeData) => {
-    const storeOltStatusQuery = 'INSERT INTO olt_status VALUES (?,?,?,?,?,?)';
+    const storeOltStatusQuery = 'INSERT INTO olt_status VALUES (?,?,?,?,?,?);';
     let resStoreOltStatus;
     let retVal;
     await Promise.all(
@@ -345,15 +344,55 @@ const reportOps = async (db) => {
     HAVING percent_olt_up.report_id = ?;`;
 
     let resGenOltStatus;
+    const splitId = reportId.split('$');
+    const reportType = splitId[0];
+    splitId[0] = 'olt-net-provider';
+    const srcReportId = splitId.join('$');
+    const srcReportExists = await chkReportExists(srcReportId);
+    if (!srcReportExists) {
+      return [
+        404,
+        {
+          message:
+            'The report type required for generating the report does not exist.',
+        },
+      ];
+    }
     try {
       [resGenOltStatus] = await db.query(genOltStatusQuery, [
-        reportId,
-        reportId,
-        reportId,
-        reportId,
+        srcReportId,
+        srcReportId,
+        srcReportId,
+        srcReportId,
       ]);
     } catch (err) {
       console.error('Could not generate the report from the database.', err);
+    }
+    let resFileStore;
+    let filePath;
+    try {
+      [resFileStore, , filePath] = await storeDataAsXLSX(
+        reportId,
+        resGenOltStatus
+      );
+    } catch (err) {
+      console.error('Could not store the file to the server.', err);
+    }
+    if (resFileStore !== 200) {
+      return resFileStore;
+    }
+    try {
+      [resFileStore] = await storeReportToServer(
+        reportType,
+        splitId[1],
+        splitId[2],
+        filePath
+      );
+    } catch (err) {
+      console.error('Could not store the file information to database.', err);
+    }
+    if (resFileStore !== 200) {
+      return resFileStore;
     }
     let resStoreOltStatus;
     try {
@@ -364,9 +403,8 @@ const reportOps = async (db) => {
     if (resStoreOltStatus[0] !== 200) {
       return resStoreOltStatus;
     }
-    const reportDate = new Date();
     try {
-      resStoreOltStatus = await storeDataAsXLSX(reportDate, resGenOltStatus);
+      resStoreOltStatus = await storeDataAsXLSX(splitId[1], resGenOltStatus);
     } catch (err) {
       console.error('Could not store the file to the server.', err);
     }
