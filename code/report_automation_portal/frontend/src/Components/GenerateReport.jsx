@@ -39,6 +39,7 @@ export default function GenerateReport() {
       date: genDate,
       sessn: reportSession,
     };
+    console.log(genData);
     const response = await getReportData(genData);
     console.log(response);
   };
@@ -52,7 +53,7 @@ export default function GenerateReport() {
       <div id="generate-form">
         <form
           action=""
-          method="GET"
+          method="POST"
           encType="multipart/form-data"
           onSubmit={getReport}
         >

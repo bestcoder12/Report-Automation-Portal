@@ -165,7 +165,7 @@ const makeApp = async (userFunc, reportFunc) => {
 
     let userExist;
     try {
-      userExist = await userFunc.checkUserExists(req.body.username);
+      userExist = await userFunc.checkUserExists(req.query.username);
     } catch (err) {
       console.error('Could not fetch user existence.', err);
     }
@@ -180,9 +180,9 @@ const makeApp = async (userFunc, reportFunc) => {
       console.error('Could not check if user admin or not.', err);
     }
     if (isAdmin) {
-      // if (userFunc.chkAdmin(req.body.username)) {
+      // if (userFunc.chkAdmin(req.query.username)) {
       [detailsSts, detailsMesg] = await userFunc.getUserDetails(
-        req.body.username
+        req.query.username
       );
     } else {
       detailsMesg = { message: 'Could not perform operation' };
@@ -333,11 +333,6 @@ const makeApp = async (userFunc, reportFunc) => {
             { message: 'The report being added already exists.' },
           ];
         } else {
-          /* const tempDate = new Date(req.body.date);
-          const mySQLDateString = tempDate
-            .toJSON()
-            .slice(0, 19)
-            .replace('T', ' '); */
           try {
             [upldSts, upldMesg, reportId] =
               await reportFunc.storeReportToServer(
@@ -376,9 +371,9 @@ const makeApp = async (userFunc, reportFunc) => {
     let reportId;
     try {
       reportId = await reportFunc.getReportId(
-        req.body.type,
-        req.body.date,
-        req.body.sessn
+        req.query.type,
+        req.query.date,
+        req.query.sessn
       );
     } catch (err) {
       console.error('Could not get reportId.', err);
@@ -398,7 +393,7 @@ const makeApp = async (userFunc, reportFunc) => {
       try {
         [ftchSts, ftchMesg] = await classifyOperation(
           undefined,
-          req.body.type,
+          req.query.type,
           reportId,
           'fetch',
           reportFunc
@@ -421,9 +416,9 @@ const makeApp = async (userFunc, reportFunc) => {
 
     try {
       reportId = await reportFunc.getReportId(
-        req.body.type,
-        req.body.date,
-        req.body.sessn
+        req.query.type,
+        req.query.date,
+        req.query.sessn
       );
     } catch (err) {
       console.error('Could not get reportId.', err);
@@ -438,7 +433,7 @@ const makeApp = async (userFunc, reportFunc) => {
       try {
         [genSts, genMesg] = await classifyOperation(
           undefined,
-          req.body.type,
+          req.query.type,
           reportId,
           'fetch',
           reportFunc
@@ -453,7 +448,7 @@ const makeApp = async (userFunc, reportFunc) => {
       try {
         [genSts, genMesg] = await classifyOperation(
           undefined,
-          req.body.type,
+          req.query.type,
           reportId,
           'generate',
           reportFunc
