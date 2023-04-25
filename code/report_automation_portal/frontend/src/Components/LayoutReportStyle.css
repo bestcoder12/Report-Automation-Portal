@@ -30,7 +30,7 @@
   border-radius: 1em;
   display: flex;
   width: 100%;
-  margin-top: 15vh;
+  margin-top: 10vh;
 }
 
 .report-child {
@@ -111,4 +111,20 @@ select {
   margin-bottom: 4vh;
   position: relative;
   display: inline-block;
+}
+
+.report-table-container {
+  margin-top: 2vh;
+  overflow: scroll;
+  white-space: nowrap;
+  height: 30vh;
+}
+
+.report-table {
+  background-color: #dce4ec;
+  padding: 1rem;
+}
+
+.pagination-select {
+  width: 40%;
 }

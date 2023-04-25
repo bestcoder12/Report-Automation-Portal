@@ -1,6 +1,7 @@
 /* import { readFileSync } from 'fs'; */
 import * as XLSX from 'xlsx';
 import * as fs from 'fs';
+import reportArr from './reportHeaders.js';
 
 XLSX.set_fs(fs);
 
@@ -277,15 +278,22 @@ const reportOps = async (db) => {
     return retVal;
   };
 
-  const fetchReport = async (reportType, reportId) => {
+  const fetchReport = async (reportType, reportLoc, reportId) => {
     const fetchQuery = 'SELECT * FROM ?? WHERE report_id = ?';
     let resFetchQuery;
     try {
-      [resFetchQuery] = await db.query(fetchQuery, [reportType, reportId]);
+      [resFetchQuery] = await db.query(fetchQuery, [reportLoc, reportId]);
     } catch (err) {
       console.error('Could not fetch report from the database.', err);
     }
-    return [200, resFetchQuery];
+    const mtData = reportArr[reportType];
+    return [
+      200,
+      {
+        rows: resFetchQuery,
+        metaData: mtData,
+      },
+    ];
   };
 
   const genOltStatus = async (reportId) => {
@@ -411,7 +419,13 @@ const reportOps = async (db) => {
     if (resStoreOltStatus[0] !== 200) {
       return resStoreOltStatus;
     }
-    return [200, resGenOltStatus];
+    return [
+      200,
+      {
+        rows: resGenOltStatus,
+        metaData: reportArr[reportType],
+      },
+    ];
   };
 
   return {

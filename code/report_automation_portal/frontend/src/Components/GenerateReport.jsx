@@ -1,13 +1,82 @@
-import { useState } from 'react';
+/* eslint-disable no-unused-vars */
+import { useState, useMemo } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import styled from 'styled-components';
 import ResSideBar from './SideBar.jsx';
 import DropDownMenu from './DropDownMenu.jsx';
 import getReportData from './GetData.js';
+import DispTable from './DispTable.jsx';
 import './LayoutReportStyle.css';
+
+const Styles = styled.div`
+  padding: 1rem;
+
+  table {
+    border-spacing: 0;
+    border: 1px solid black;
+
+    tr {
+      :last-child {
+        td {
+          border-bottom: 0;
+        }
+      }
+    }
+
+    th,
+    td {
+      margin: 0;
+      padding: 0.5rem;
+      border-bottom: 1px solid black;
+      border-right: 1px solid black;
+
+      :last-child {
+        border-right: 0;
+      }
+    }
+  }
+
+  .pagination {
+    padding: 0.5rem;
+  }
+`;
 
 export default function GenerateReport() {
   const [value, onChange] = useState(new Date());
+  // const [reportData, setReportData] = useState();
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'Column 1',
+        accessor: 'col1',
+      },
+      {
+        Header: 'Column 2',
+        accessor: 'col2',
+      },
+    ],
+    []
+  );
+
+  const data = useMemo(
+    () => [
+      {
+        col1: 'Hello',
+        col2: 'World',
+      },
+      {
+        col1: 'react-table',
+        col2: 'rocks',
+      },
+      {
+        col1: 'whatever',
+        col2: 'you want',
+      },
+    ],
+    []
+  );
 
   const reportOptions = [
     { label: 'OLT Status', value: 'olt-status' },
@@ -41,6 +110,7 @@ export default function GenerateReport() {
       sessn: reportSession,
     };
     const response = await getReportData(genData);
+    // setReportData(response.data);
     console.log(response);
   };
 
@@ -51,7 +121,7 @@ export default function GenerateReport() {
       </div>
       <div className="page-container">
         <h1 className="heading">Generate Report</h1>
-        <div className="report-form">
+        <div className="report-form" style={{ maxHeight: '450px' }}>
           <div className="report-child">
             <form
               action=""
@@ -84,6 +154,11 @@ export default function GenerateReport() {
             <div className="cal-label">Select date of report</div>
             <Calendar onChange={onChange} value={value} />
           </div>
+        </div>
+        <div className="report-table-container">
+          <Styles>
+            <DispTable columns={columns} data={data} />
+          </Styles>
         </div>
       </div>
     </div>

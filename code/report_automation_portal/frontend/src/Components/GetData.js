@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 const getReportData = async (fileData) => {
-  console.log(fileData);
   const config = {
     method: 'get',
     url: 'http://localhost:8080/reports/generate-report',
