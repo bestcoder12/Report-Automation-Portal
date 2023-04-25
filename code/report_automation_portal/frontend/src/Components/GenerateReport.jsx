@@ -44,39 +44,13 @@ const Styles = styled.div`
 
 export default function GenerateReport() {
   const [value, onChange] = useState(new Date());
-  // const [reportData, setReportData] = useState();
+  const [reportCols, setReportCols] = useState([
+    { Headers: 'Foo', accessor: 'Bar' },
+  ]);
+  const [reportData, setReportData] = useState([{ Bar: 'FooBar' }]);
 
-  const columns = useMemo(
-    () => [
-      {
-        Header: 'Column 1',
-        accessor: 'col1',
-      },
-      {
-        Header: 'Column 2',
-        accessor: 'col2',
-      },
-    ],
-    []
-  );
-
-  const data = useMemo(
-    () => [
-      {
-        col1: 'Hello',
-        col2: 'World',
-      },
-      {
-        col1: 'react-table',
-        col2: 'rocks',
-      },
-      {
-        col1: 'whatever',
-        col2: 'you want',
-      },
-    ],
-    []
-  );
+  const columns = useMemo(() => reportCols, [reportCols]);
+  const data = useMemo(() => reportData, [reportData]);
 
   const reportOptions = [
     { label: 'OLT Status', value: 'olt-status' },
@@ -111,7 +85,17 @@ export default function GenerateReport() {
     };
     const response = await getReportData(genData);
     // setReportData(response.data);
-    console.log(response);
+    let colObj;
+    const colArr = [];
+    for (let idx = 0; idx < response.data.metaData.headers.length; idx += 1) {
+      colObj = {
+        Header: response.data.metaData.headers[idx],
+        accessor: response.data.metaData.columns[idx + 1],
+      };
+      colArr.push(colObj);
+    }
+    setReportCols(colArr);
+    setReportData(response.data.rows);
   };
 
   return (
