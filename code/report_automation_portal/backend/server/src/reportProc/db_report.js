@@ -58,7 +58,9 @@ const reportOps = async (db) => {
         err
       );
     }
-    const reportExist = Object.values([resReportExist][0][0])[0];
+    const reportExist = Object.values(
+      Object.values([resReportExist][0][0])[0]
+    )[0];
     return reportExist !== 0;
   };
 

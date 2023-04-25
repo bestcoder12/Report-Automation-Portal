@@ -51,13 +51,19 @@ export default function AddReport() {
   return (
     <div className="page">
       <ResSideBar />
-      <h1 style={{ color: 'white', marginLeft: '5rem' }}>Add Report</h1>
+      <h1 style={{ color: 'black', marginLeft: '25vh', height: '5vh' }}>
+        Add Report
+      </h1>
       <div id="upload-form">
-        <form action="" method="POST" onSubmit={uploadFile}>
+        <form
+          action=""
+          method="POST"
+          encType="multipart/form-data"
+          onSubmit={uploadFile}
+        >
           <DropDownMenu
             domFor="up-report-type"
             domLabelId="upld-type-label"
-            domSelectId="upld-type-select"
             label="Select type of report"
             options={reportOptions}
             value={reportType}
@@ -66,7 +72,6 @@ export default function AddReport() {
           <DropDownMenu
             domFor="up-report-sessn"
             domLabelId="upld-sessn-label"
-            domSelectId="upld-sesn-select"
             label="Select session of report"
             options={sessionOptions}
             value={reportSession}
@@ -76,6 +81,7 @@ export default function AddReport() {
             type="file"
             name="xlsx"
             id="file-button"
+            accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             onChange={handleFile}
           />
           <button type="submit" className="form-button">

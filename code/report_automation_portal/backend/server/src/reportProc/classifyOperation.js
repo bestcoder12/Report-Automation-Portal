@@ -12,7 +12,7 @@ const classifyOperation = async (
         retVal = await reportFunc.storeOltMonthly(reportFile, reportId);
         break;
       case 'olt-net-provider':
-        await reportFunc.storeOltNet(reportFile, reportId);
+        retVal = await reportFunc.storeOltNet(reportFile, reportId);
         break;
       case 'ont-ticket':
         break;

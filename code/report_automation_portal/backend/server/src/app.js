@@ -11,10 +11,11 @@ import classifyOperation from './reportProc/classifyOperation.js';
 const storage = multer.diskStorage({
   destination: 'uploads/',
   filename: (req, file, cb) => {
-    const fileDate = new Date(req.body.date);
+    const splitDate = req.body.date.split('-');
+    const fileDate = new Date(splitDate[0], splitDate[1] - 1, splitDate[2]);
     console.log(
       fileDate,
-      `report_${fileDate.getDate()}-${
+      `report_${req.body.type}_${fileDate.getDate()}-${
         fileDate.getMonth() + 1
       }-${fileDate.getFullYear()}.xlsx`
     );
@@ -310,12 +311,6 @@ const makeApp = async (userFunc, reportFunc) => {
           mesage: `The file ${req.file.originalname} is infected please check the file.`,
         };
       } else {
-        /* const tempDate = new Date().toISOString();
-        const tempDate2 = new Date(tempDate);
-        const mySQLDateString = tempDate2
-          .toJSON() 
-          .slice(0, 19)
-          .replace('T', ' '); */
         let reportId;
         try {
           reportId = await reportFunc.getReportId(
@@ -338,16 +333,16 @@ const makeApp = async (userFunc, reportFunc) => {
             { message: 'The report being added already exists.' },
           ];
         } else {
-          const tempDate = new Date(req.body.date);
+          /* const tempDate = new Date(req.body.date);
           const mySQLDateString = tempDate
             .toJSON()
             .slice(0, 19)
-            .replace('T', ' ');
+            .replace('T', ' '); */
           try {
             [upldSts, upldMesg, reportId] =
               await reportFunc.storeReportToServer(
                 req.body.type,
-                mySQLDateString,
+                req.body.date,
                 req.body.sessn,
                 req.file.path
               );
@@ -370,7 +365,6 @@ const makeApp = async (userFunc, reportFunc) => {
           }
         }
       }
-      console.log(req.file);
       console.log(upldSts, upldMesg);
       res.status(upldSts).json(upldMesg);
     }

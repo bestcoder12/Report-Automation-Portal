@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 export default function DropDownMenu({
   domFor,
   domLabelId,
-  domSelectId,
   label,
   value,
   options,
@@ -12,7 +11,7 @@ export default function DropDownMenu({
   return (
     <label htmlFor={domFor} id={domLabelId}>
       {label}
-      <select value={value} onChange={onChange} id={domSelectId}>
+      <select value={value} onChange={onChange} id={domFor}>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -26,7 +25,6 @@ export default function DropDownMenu({
 DropDownMenu.defaultProps = {
   domFor: 'placeholder',
   domLabelId: 'placeholder',
-  domSelectId: 'placeholder',
   label: 'placeholder',
   value: 'placeholder',
   options: {
@@ -39,7 +37,6 @@ DropDownMenu.defaultProps = {
 DropDownMenu.propTypes = {
   domFor: PropTypes.string,
   domLabelId: PropTypes.string,
-  domSelectId: PropTypes.string,
   label: PropTypes.string,
   value: PropTypes.string,
   options: PropTypes.arrayOf(
