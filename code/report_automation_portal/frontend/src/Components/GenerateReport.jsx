@@ -4,6 +4,7 @@ import 'react-calendar/dist/Calendar.css';
 import ResSideBar from './SideBar.jsx';
 import DropDownMenu from './DropDownMenu.jsx';
 import getReportData from './GetData.js';
+import './LayoutReportStyle.css';
 
 export default function GenerateReport() {
   const [value, onChange] = useState(new Date());
@@ -45,40 +46,45 @@ export default function GenerateReport() {
   };
 
   return (
-    <div className="page">
-      <ResSideBar />
-      <h1 style={{ color: 'black', marginLeft: '25vh', height: '5vh' }}>
-        Generate Report
-      </h1>
-      <div id="generate-form">
-        <form
-          action=""
-          method="POST"
-          encType="multipart/form-data"
-          onSubmit={getReport}
-        >
-          <DropDownMenu
-            domFor="gen-report-type"
-            domLabelId="gen-type-label"
-            label="Select type of report"
-            options={reportOptions}
-            value={reportType}
-            onChange={handleReportType}
-          />
-          <DropDownMenu
-            domFor="gen-report-sessn"
-            domLabelId="gen-sessn-label"
-            label="Select session of report"
-            options={sessionOptions}
-            value={reportSession}
-            onChange={handleReportSession}
-          />
-          <button type="submit" className="form-button">
-            Generate report
-          </button>
-        </form>
-        <div style={{ margin: '10vh' }}>
-          <Calendar onChange={onChange} value={value} />
+    <div className="report-container">
+      <div className="sidebar">
+        <ResSideBar />
+      </div>
+      <div className="page-container">
+        <h1 className="heading">Generate Report</h1>
+        <div className="report-form">
+          <div className="report-child">
+            <form
+              action=""
+              method="POST"
+              onSubmit={getReport}
+              className="report-child"
+            >
+              <DropDownMenu
+                domFor="gn-report-type"
+                domLabelId="gen-type-label"
+                label="Select type of report"
+                options={reportOptions}
+                value={reportType}
+                onChange={handleReportType}
+              />
+              <DropDownMenu
+                domFor="up-report-sessn"
+                domLabelId="gen-sessn-label"
+                label="Select session of report"
+                options={sessionOptions}
+                value={reportSession}
+                onChange={handleReportSession}
+              />
+              <button type="submit" className="form-button">
+                Generate Report
+              </button>
+            </form>
+          </div>
+          <div className="report-child report-calendar">
+            <div className="cal-label">Select date of report</div>
+            <Calendar onChange={onChange} value={value} />
+          </div>
         </div>
       </div>
     </div>

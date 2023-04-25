@@ -4,7 +4,7 @@ import 'react-calendar/dist/Calendar.css';
 import sendFile from './SendFile.js';
 import ResSideBar from './SideBar.jsx';
 import DropDownMenu from './DropDownMenu.jsx';
-import './AddReportStyle.css';
+import './LayoutReportStyle.css';
 
 export default function AddReport() {
   const [value, onChange] = useState(new Date());
@@ -49,48 +49,54 @@ export default function AddReport() {
   };
 
   return (
-    <div className="page">
-      <ResSideBar />
-      <h1 style={{ color: 'black', marginLeft: '25vh', height: '5vh' }}>
-        Add Report
-      </h1>
-      <div id="upload-form">
-        <form
-          action=""
-          method="POST"
-          encType="multipart/form-data"
-          onSubmit={uploadFile}
-        >
-          <DropDownMenu
-            domFor="up-report-type"
-            domLabelId="upld-type-label"
-            label="Select type of report"
-            options={reportOptions}
-            value={reportType}
-            onChange={handleReportType}
-          />
-          <DropDownMenu
-            domFor="up-report-sessn"
-            domLabelId="upld-sessn-label"
-            label="Select session of report"
-            options={sessionOptions}
-            value={reportSession}
-            onChange={handleReportSession}
-          />
-          <input
-            type="file"
-            name="xlsx"
-            id="file-button"
-            accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            onChange={handleFile}
-          />
-          <button type="submit" className="form-button">
-            Upload report
-          </button>
-        </form>
+    <div className="report-container">
+      <div className="sidebar">
+        <ResSideBar />
       </div>
-      <div style={{ margin: '10vh' }}>
-        <Calendar onChange={onChange} value={value} />
+      <div className="page-container">
+        <h1 className="heading">Add Report</h1>
+        <div className="report-form">
+          <div className="report-child">
+            <form
+              action=""
+              method="POST"
+              encType="multipart/form-data"
+              onSubmit={uploadFile}
+              className="report-child"
+            >
+              <DropDownMenu
+                domFor="up-report-type"
+                domLabelId="upld-type-label"
+                label="Select type of report"
+                options={reportOptions}
+                value={reportType}
+                onChange={handleReportType}
+              />
+              <DropDownMenu
+                domFor="up-report-sessn"
+                domLabelId="upld-sessn-label"
+                label="Select session of report"
+                options={sessionOptions}
+                value={reportSession}
+                onChange={handleReportSession}
+              />
+              <input
+                type="file"
+                name="xlsx"
+                id="file-button"
+                accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                onChange={handleFile}
+              />
+              <button type="submit" className="form-button">
+                Upload report
+              </button>
+            </form>
+          </div>
+          <div className="report-child report-calendar">
+            <div className="cal-label">Select date of report</div>
+            <Calendar onChange={onChange} value={value} />
+          </div>
+        </div>
       </div>
     </div>
   );

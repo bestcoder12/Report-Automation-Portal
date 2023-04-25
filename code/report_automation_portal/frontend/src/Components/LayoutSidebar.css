@@ -21,6 +21,7 @@
 
 .sidebar-text {
   margin-left: 16px;
+  position: sticky;
 }
 
 .sidebar-icon {
