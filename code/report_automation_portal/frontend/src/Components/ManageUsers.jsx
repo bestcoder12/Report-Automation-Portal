@@ -7,6 +7,7 @@ import './LayoutReportStyle.css';
 import './LayoutManageUsers.css';
 import DropDownMenu from './DropDownMenu.jsx';
 import ActionCells from './ActionCells.jsx';
+import removeUser from './RemoveUser.js';
 
 export default function ManageUsers() {
   const [userData, setUserData] = useState();
@@ -38,9 +39,14 @@ export default function ManageUsers() {
     setUserData(updatedUsers);
   }, [userData, delUser]);
 
-  const deleteUser = () => {
+  const deleteUser = async () => {
+    const response = await removeUser(delUser);
+    if (response.statusCode !== 200) {
+      return <div>Could not delete user</div>;
+    }
     handleDelete(delUser);
     closeConfirmation();
+    return response.statusCode;
   };
 
   const renderActionCells = useCallback(
@@ -177,7 +183,7 @@ export default function ManageUsers() {
           </div>
         )}
         <div className="add-button">
-          {toggleUserForm ? (
+          {toggleUserForm && (
             <form
               action=""
               method="POST"
@@ -216,8 +222,6 @@ export default function ManageUsers() {
               />
               <button type="submit">Create user</button>
             </form>
-          ) : (
-            <div />
           )}
           <input
             type="button"

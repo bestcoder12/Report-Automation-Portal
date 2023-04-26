@@ -36,10 +36,6 @@
   transition: background-color 0.3s ease;
 }
 
-/* .button-users:hover {
-    background-color: #3e8e41;
-} */
-
 .button-users:nth-child(1) {
   background-color: #fdd835;
 }
@@ -55,6 +51,26 @@
 
 .button-users:last-child:hover {
   background-color: #e53935;
+}
+
+.confirm-button,
+.cancel-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.confirm-button {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+}
+
+.cancel-button {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  margin-left: 0.5rem;
 }
 
 /* Form styling */
