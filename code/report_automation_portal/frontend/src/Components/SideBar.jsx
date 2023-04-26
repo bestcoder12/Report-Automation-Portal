@@ -20,7 +20,7 @@ export default function ResSideBar() {
 
   const value = useContext(UserContext);
   const navigate = useNavigate();
-  const { setCurrentUser, setUserType } = value;
+  const { currentUser, setCurrentUser, setUserType } = value;
 
   const userLogout = async (e) => {
     e.preventDefault();
@@ -47,8 +47,10 @@ export default function ResSideBar() {
               collapseSidebar();
             }}
             className="sidebar-link toggle-icons sidebar-icon .sidebar-link:hover"
-          />
-
+          >
+            {' '}
+            {currentUser ? <h3>Hi, {currentUser} </h3> : ''}
+          </MenuItem>
           <MenuItem
             icon={<AiIcons.AiFillHome />}
             component={<Link to="/dashboard" />}

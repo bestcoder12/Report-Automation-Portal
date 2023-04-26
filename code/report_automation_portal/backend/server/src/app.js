@@ -8,26 +8,29 @@ import chkCleanFile from './reportProc/chkCleanFile.js';
 import { sessionStore } from '../middleware/database.js';
 import classifyOperation from './reportProc/classifyOperation.js';
 
-const storage = multer.diskStorage({
-  destination: 'uploads/',
-  filename: (req, file, cb) => {
-    const splitDate = req.body.date.split('-');
-    const fileDate = new Date(splitDate[0], splitDate[1] - 1, splitDate[2]);
-    cb(
-      null,
-      `report_${req.body.type}_${fileDate.getDate()}-${
-        fileDate.getMonth() + 1
-      }-${fileDate.getFullYear()}_${req.body.sessn}.xlsx`
-    );
-  },
-});
-const upload = multer({ storage });
-
 dotenv.config();
 
 const makeApp = async (userFunc, reportFunc) => {
   const app = express();
   app.use(express.json());
+
+  app.use(
+    session({
+      key: process.env.SESSION_KEY,
+      secret: process.env.SESSION_SECRET,
+      store: sessionStore,
+      resave: false,
+      saveUninitialized: false,
+      name: process.env.COOKIE_NAME,
+      cookie: {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: false,
+        maxAge: 3600000,
+      },
+    })
+  );
+
   app.use(
     cors({
       origin: 'http://localhost:3000',
@@ -38,20 +41,20 @@ const makeApp = async (userFunc, reportFunc) => {
     })
   );
 
-  app.use(
-    session({
-      key: process.env.SESSION_KEY,
-      secret: process.env.SESSION_SECRET,
-      store: sessionStore,
-      resave: true,
-      saveUninitialized: false,
-    })
-  );
-
-  app.use((req, res, next) => {
-    req.session.init = 'init';
-    next();
+  const storage = multer.diskStorage({
+    destination: 'uploads/',
+    filename: (req, file, cb) => {
+      const splitDate = req.body.date.split('-');
+      const fileDate = new Date(splitDate[0], splitDate[1] - 1, splitDate[2]);
+      cb(
+        null,
+        `report_${req.body.type}_${fileDate.getDate()}-${
+          fileDate.getMonth() + 1
+        }-${fileDate.getFullYear()}_${req.body.sessn}.xlsx`
+      );
+    },
   });
+  const upload = multer({ storage });
 
   app.post(
     '/users/login-user',
@@ -71,7 +74,6 @@ const makeApp = async (userFunc, reportFunc) => {
         res
           .status(404)
           .send({ message: 'Username incorrect. Please check the username.' });
-        // res.redirect("/")
         return;
       }
 
@@ -94,20 +96,22 @@ const makeApp = async (userFunc, reportFunc) => {
           req.session.user = req.body.username;
           req.session.utype = userType;
           req.session.save(() => {
-            if (err) return next(err);
-            // res.redirect("/Dashboard")
-            return undefined;
+            if (err) {
+              res
+                .status(500)
+                .json({ message: 'Could not save session properly.' });
+              next(err);
+            }
+            res
+              .status(200)
+              .json({ message: 'Yay! Logged in.', userType: [userType] });
           });
         });
-        res
-          .status(200)
-          .json({ message: 'Yay! Logged in.', userType: [userType] });
       } else {
         req.session.validSession = false;
         res
           .status(401)
           .json({ message: 'Oh no. Wrong password', userType: [userType] });
-        // res.redirect("/Login")
       }
     }
   );
@@ -157,7 +161,7 @@ const makeApp = async (userFunc, reportFunc) => {
     let detailsSts = 404;
     let detailsMesg = { '': '' };
 
-    let userExist;
+    /*  let userExist;
     try {
       userExist = await userFunc.checkUserExists(req.query.username);
     } catch (err) {
@@ -166,7 +170,7 @@ const makeApp = async (userFunc, reportFunc) => {
     if (!userExist) {
       detailsMesg = { message: 'User does not exist.' };
       res.status(detailsSts).json(detailsMesg);
-    }
+    } */
     let isAdmin;
     try {
       isAdmin = userFunc.chkAdmin(req.session.user);
@@ -175,9 +179,7 @@ const makeApp = async (userFunc, reportFunc) => {
     }
     if (isAdmin) {
       // if (userFunc.chkAdmin(req.query.username)) {
-      [detailsSts, detailsMesg] = await userFunc.getUserDetails(
-        req.query.username
-      );
+      [detailsSts, detailsMesg] = await userFunc.getUserDetails();
     } else {
       detailsMesg = { message: 'Could not perform operation' };
     }
@@ -271,14 +273,18 @@ const makeApp = async (userFunc, reportFunc) => {
 
   app.get('/users/logout', async (req, res, next) => {
     req.session.username = null;
-    req.session.save((err) => {
+    /* req.session.save((err) => { 
       if (err) next(err);
       req.session.regenerate(() => {
         if (err) next(err);
         res.clearCookie(process.env.SESSION_KEY);
         // res.redirect('/');
-      });
-    });
+      }); 
+    }); */
+    const ssId = req.sessionID;
+    req.session.destroy(ssId);
+    res.status(200).send({ message: 'Logged out successfully', ssId });
+    next();
   });
 
   app.post(

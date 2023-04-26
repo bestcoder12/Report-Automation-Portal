@@ -2,8 +2,8 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const IN_PROD = process.env.NODE_ENV === 'production';
-const ONE_HOUR = 1000 * 60 * 60;
+// const IN_PROD = process.env.NODE_ENV === 'production;
+// const ONE_HOUR = 1000 * 60 * 60;
 
 const configMysql = {
   multipleStatements: true,
@@ -21,12 +21,6 @@ export const optionSession = {
   user: process.env.MYSQL_USER,
   password: process.env.MYSQL_PASSWORD,
   database: process.env.SESSION_DATABASE,
-  cookie: {
-    httpOnly: true,
-    maxAge: ONE_HOUR,
-    sameSite: true,
-    secure: IN_PROD,
-  },
 };
 
 export default configMysql;

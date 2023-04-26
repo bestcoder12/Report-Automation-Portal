@@ -2,52 +2,16 @@
 import { useState, useMemo } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import styled from 'styled-components';
 import ResSideBar from './SideBar.jsx';
 import DropDownMenu from './DropDownMenu.jsx';
 import getReportData from './GetData.js';
 import DispTable from './DispTable.jsx';
 import './LayoutReportStyle.css';
 
-const Styles = styled.div`
-  padding: 1rem;
-
-  table {
-    border-spacing: 0;
-    border: 1px solid black;
-
-    tr {
-      :last-child {
-        td {
-          border-bottom: 0;
-        }
-      }
-    }
-
-    th,
-    td {
-      margin: 0;
-      padding: 0.5rem;
-      border-bottom: 1px solid black;
-      border-right: 1px solid black;
-
-      :last-child {
-        border-right: 0;
-      }
-    }
-  }
-
-  .pagination {
-    padding: 0.5rem;
-  }
-`;
-
 export default function GenerateReport() {
   const [value, onChange] = useState(new Date());
-  const [reportCols, setReportCols] = useState([
-    { Headers: 'Foo', accessor: 'Bar' },
-  ]);
-  const [reportData, setReportData] = useState([{ Bar: 'FooBar' }]);
+  const [reportCols, setReportCols] = useState();
+  const [reportData, setReportData] = useState();
 
   const columns = useMemo(() => reportCols, [reportCols]);
   const data = useMemo(() => reportData, [reportData]);
@@ -140,9 +104,7 @@ export default function GenerateReport() {
           </div>
         </div>
         <div className="report-table-container">
-          <Styles>
-            <DispTable columns={columns} data={data} />
-          </Styles>
+          {reportData ? <DispTable columns={columns} data={data} /> : <div />}
         </div>
       </div>
     </div>

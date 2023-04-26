@@ -188,12 +188,11 @@ const userOps = async (db) => {
     return [500, { Message: 'User could not be deleted.' }];
   };
 
-  const getUserDetails = async (userName) => {
-    const detailUserQuery =
-      'SELECT username, user_type, user_role FROM user WHERE username=?;';
+  const getUserDetails = async () => {
+    const detailUserQuery = 'SELECT username, user_type, user_role FROM user;';
     let resUserDetails;
     try {
-      [resUserDetails] = await db.query(detailUserQuery, [userName]);
+      [resUserDetails] = await db.query(detailUserQuery, []);
     } catch (err) {
       console.error('Could not get user details from database.', err);
       return [

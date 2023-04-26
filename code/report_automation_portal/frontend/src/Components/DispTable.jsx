@@ -8,10 +8,7 @@ export default function DispTable({ columns, data }) {
     getTableBodyProps,
     headerGroups,
     prepareRow,
-    page, // Instead of using 'rows', we'll use page,
-    // which has only the rows for the active page
-
-    // The rest of these things are super handy, too ;)
+    page,
     canPreviousPage,
     canNextPage,
     pageOptions,
@@ -29,8 +26,6 @@ export default function DispTable({ columns, data }) {
     },
     usePagination
   );
-
-  // Render the UI for your table
   return (
     <>
       <table {...getTableProps()}>
@@ -56,10 +51,6 @@ export default function DispTable({ columns, data }) {
           })}
         </tbody>
       </table>
-      {/* 
-        Pagination can be built however you'd like. 
-        This is just a very basic UI implementation:
-      */}
       <div className="pagination">
         <input
           type="button"
