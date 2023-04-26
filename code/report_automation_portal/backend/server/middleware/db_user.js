@@ -200,7 +200,7 @@ const userOps = async (db) => {
         { message: 'Could not find the user or unable to fetch its details.' },
       ];
     }
-    return [200, resUserDetails[0]];
+    return [200, resUserDetails];
   };
 
   return {
