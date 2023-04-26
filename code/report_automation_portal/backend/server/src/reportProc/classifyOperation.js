@@ -6,13 +6,14 @@ const classifyOperation = async (
   reportFunc
 ) => {
   let retVal;
+  console.log(reportType);
   if (opType === 'store') {
     switch (reportType) {
       case 'olt-monthly':
         retVal = await reportFunc.storeOltMonthly(reportFile, reportId);
         break;
       case 'olt-net-provider':
-        await reportFunc.storeOltNet(reportFile, reportId);
+        retVal = await reportFunc.storeOltNet(reportFile, reportId);
         break;
       case 'ont-ticket':
         break;
@@ -40,11 +41,11 @@ const classifyOperation = async (
     switch (reportType) {
       case 'olt-monthly':
         reportLoc = 'olt_monthly';
-        retVal = await reportFunc.fetchReport(reportLoc, reportId);
+        retVal = await reportFunc.fetchReport(reportType, reportLoc, reportId);
         break;
       case 'olt-net-provider':
         reportLoc = 'olt_net_provider';
-        retVal = await reportFunc.fetchReport(reportLoc, reportId);
+        retVal = await reportFunc.fetchReport(reportType, reportLoc, reportId);
         break;
       case 'ont-ticket':
         break;
@@ -56,11 +57,11 @@ const classifyOperation = async (
         break;
       case 'olt-status':
         reportLoc = 'olt_status';
-        retVal = await reportFunc.fetchReport(reportLoc, reportId);
+        retVal = await reportFunc.fetchReport(reportType, reportLoc, reportId);
         break;
       case 'ont-status':
         reportLoc = 'ont_status';
-        retVal = await reportFunc.fetchReport(reportLoc, reportId);
+        retVal = await reportFunc.fetchReport(reportType, reportLoc, reportId);
         break;
       case 'mark-for-del':
         break;
@@ -73,7 +74,6 @@ const classifyOperation = async (
     // let reportLoc;
     switch (reportType) {
       case 'olt-status':
-        // reportLoc = 'olt_status';
         retVal = await reportFunc.genOltStatus(reportId);
         break;
       case 'ont-status':

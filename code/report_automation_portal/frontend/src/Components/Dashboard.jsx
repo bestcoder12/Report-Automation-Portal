@@ -1,14 +1,12 @@
-import React from 'react';
-import { SideBar } from './SideBar';
+import ResSideBar from './SideBar.jsx';
 
-export const Dashboard = () => {
+export default function Dashboard() {
   return (
     <>
-      <SideBar />
-
+      <ResSideBar />
       <div style={{ textAlign: 'center', fontSize: '28px', margin: '40vh' }}>
         Welcome to the Report Automation Portal
       </div>
     </>
   );
-};
+}

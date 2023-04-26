@@ -1,14 +1,13 @@
 import axios from 'axios';
 
-const loginAuth = async (userData) => {
+const getUsers = async () => {
   let res;
   const config = {
-    method: 'post',
-    url: 'http://localhost:8080/users/login-user',
+    method: 'get',
+    url: 'http://localhost:8080/users/details-user',
     headers: {
       'Content-Type': 'application/json',
     },
-    data: userData,
   };
   try {
     res = await axios(config);
@@ -18,4 +17,4 @@ const loginAuth = async (userData) => {
   return { statusCode: res.status, data: res.data };
 };
 
-export default loginAuth;
+export default getUsers;

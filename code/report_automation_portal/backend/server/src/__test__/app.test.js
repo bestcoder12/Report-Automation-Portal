@@ -1,6 +1,8 @@
 import request from 'supertest';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { jest } from '@jest/globals';
+// eslint-disable-next-line import/no-extraneous-dependencies
+// import Session from 'supertest-session';
 import makeApp from '../app.js';
 import userOps from '../../middleware/db_user.js';
 import testData from './appTestData';
@@ -191,14 +193,21 @@ describe('Get user details endpoint', () => {
 
   test('should call getUserDetails() function', async () => {
     const userObj = testData.corrAdminUsers[0];
+    const response = await request(app)
+      .post('/users/login-user')
+      .send({ username: userObj.username, password: userObj.password });
     await request(app)
       .get('/users/details-user')
+      .set(response.Cookie)
       .send({ username: userObj.username });
     expect(userFunc.getUserDetails).toHaveBeenCalled();
   });
 
   test('should call getUserDetails() function exactly once per request', async () => {
     const userObj = testData.corrAdminUsers[0];
+    await request(app)
+      .post('/users/login-user')
+      .send({ username: userObj.username, password: userObj.password });
     await request(app)
       .get('/users/details-user')
       .send({ username: userObj.username });
@@ -209,6 +218,9 @@ describe('Get user details endpoint', () => {
     const userInfo = testData.corrAdminUsers;
     await Promise.all(
       userInfo.map(async (userObj) => {
+        await request(app)
+          .post('/users/login-user')
+          .send({ username: userObj.username, password: userObj.password });
         const response = await request(app)
           .get('/users/details-user')
           .send({ username: userObj.username });
@@ -221,6 +233,9 @@ describe('Get user details endpoint', () => {
     const userInfo = testData.corrAdminUsers;
     await Promise.all(
       userInfo.map(async (userObj) => {
+        await request(app)
+          .post('/users/login-user')
+          .send({ username: userObj.username, password: userObj.password });
         const response = await request(app)
           .get('/users/details-user')
           .send({ username: userObj.username });
@@ -317,18 +332,27 @@ describe('Modify user endpoint', () => {
 
   test('should call modUserByAdmin() function', async () => {
     const userInfo = testData.corrAdminUsers[0];
+    await request(app)
+      .post('/users/login-user')
+      .send({ username: userInfo.username, password: userInfo.password });
     await request(app).put('/users/modify-user').send(userInfo);
     expect(userFunc.modUserByAdmin).toHaveBeenCalled();
   });
 
   test('should call modUserByAdmin() function only once per request', async () => {
     const userInfo = testData.corrAdminUsers[0];
+    await request(app)
+      .post('/users/login-user')
+      .send({ username: userInfo.username, password: userInfo.password });
     await request(app).put('/users/modify-user').send(userInfo);
     expect(userFunc.modUserByAdmin).toHaveBeenCalledTimes(1);
   });
 
   test('should call modUserByRegular() function', async () => {
     const userInfo = testData.regularUsers[0];
+    await request(app)
+      .post('/users/login-user')
+      .send({ username: userInfo.username, password: userInfo.password });
     await request(app).put('/users/modify-user').send(userInfo);
     expect(userFunc.modUserByRegular).toHaveBeenCalled();
   });

@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-const loginAuth = async (userData) => {
+const createUser = async (userData) => {
   let res;
   const config = {
     method: 'post',
-    url: 'http://localhost:8080/users/login-user',
+    url: 'http://localhost:8080/users/add-user',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -18,4 +18,4 @@ const loginAuth = async (userData) => {
   return { statusCode: res.status, data: res.data };
 };
 
-export default loginAuth;
+export default createUser;
