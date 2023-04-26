@@ -8,15 +8,16 @@ import './LayoutManageUsers.css';
 import DropDownMenu from './DropDownMenu.jsx';
 import ActionCells from './ActionCells.jsx';
 import removeUser from './RemoveUser.js';
+import EditForm from './EditForm.jsx';
 
 export default function ManageUsers() {
   const [userData, setUserData] = useState();
   const [toggleEdit, setToggleEdit] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [delUser, setDelUser] = useState();
+
   const handleEdit = useCallback(async () => {
     setToggleEdit(!toggleEdit);
-    console.log(toggleEdit);
   }, [toggleEdit]);
 
   const openConfirmation = useCallback(
@@ -34,7 +35,7 @@ export default function ManageUsers() {
 
   const handleDelete = useCallback(() => {
     const updatedUsers = userData.filter(
-      (user) => user.username !== delUser.id
+      (user) => user.username !== delUser.username
     );
     setUserData(updatedUsers);
   }, [userData, delUser]);
@@ -50,9 +51,9 @@ export default function ManageUsers() {
   };
 
   const renderActionCells = useCallback(
-    ({ original }) => (
+    ({ row }) => (
       <ActionCells
-        original={original}
+        original={row.original}
         onEdit={handleEdit}
         onDelete={openConfirmation}
       />
@@ -77,20 +78,22 @@ export default function ManageUsers() {
       {
         Header: 'Actions',
         Cell: renderActionCells,
+        accessor: 'actions',
       },
     ],
     [renderActionCells]
   );
 
   useEffect(() => {
-    (async () => {
+    const fetchData = async () => {
       const response = await getUsers();
       if (response.statusCode !== 200) {
         setUserData([]);
       }
       setUserData(response.data);
-    })();
-  });
+    };
+    fetchData();
+  }, []);
 
   const data = useMemo(() => userData, [userData]);
 
@@ -154,7 +157,6 @@ export default function ManageUsers() {
       setUserData(newTableRows);
     }
   };
-
   return (
     <div className="report-container">
       <div className="sidebar">
@@ -228,6 +230,7 @@ export default function ManageUsers() {
             value="Add User"
             onClick={() => setToggleUserForm(!toggleUserForm)}
           />
+          {toggleEdit && <EditForm />}
         </div>
       </div>
     </div>

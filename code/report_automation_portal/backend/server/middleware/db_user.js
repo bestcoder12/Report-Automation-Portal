@@ -116,7 +116,7 @@ const userOps = async (db) => {
   const modUserByAdmin = async (userName, newPassword, newType, newRole) => {
     let retVal;
     if (!userName || !newPassword || !newType || !newRole) {
-      retVal = [
+      return [
         400,
         {
           message:
@@ -124,6 +124,22 @@ const userOps = async (db) => {
         },
       ];
     }
+    if (!chkPassStrngth(newPassword, 1)) {
+      return [
+        400,
+        {
+          message: `Password strength insuffienct.
+          Please use at least 
+            1 upper case letter,
+            1 lower case,
+            1 symbol,
+            and 1 number.
+            Also, the password length 
+            should be greater than 8`,
+        },
+      ];
+    }
+
     const newPassHash = await bcrypt.hash(newPassword, 12);
     const modUserQuery =
       'UPDATE user SET pass_hash=?, user_type=?, user_role=? WHERE username=?;';
@@ -153,6 +169,21 @@ const userOps = async (db) => {
         {
           message:
             'Details could not be updated successfully due to missing user details please check all the entries.',
+        },
+      ];
+    }
+    if (!chkPassStrngth(newPassword, 1)) {
+      return [
+        400,
+        {
+          message: `Password strength insuffienct.
+          Please use at least 
+            1 upper case letter,
+            1 lower case,
+            1 symbol,
+            and 1 number.
+            Also, the password length 
+            should be greater than 8`,
         },
       ];
     }
