@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Login } from '../Login';
 import { act } from 'react-dom/test-utils';
+import Login from '../Login.jsx';
 
 describe('Render Login form elements', () => {
   test('should render textbox for username', () => {

@@ -1,0 +1,156 @@
+.report-container {
+  display: flex;
+}
+
+.sidebar {
+  flex: 0.1;
+}
+
+.page-container {
+  /* display: flex; */
+  flex: 1;
+  justify-content: flex-end;
+  flex-direction: column;
+  margin: 5vh;
+}
+
+.heading {
+  flex: 1;
+  height: 60px;
+  color: black;
+  font-size: 5vh;
+  text-align: center;
+  max-height: fit-content;
+  position: relative;
+}
+
+.report-form {
+  box-shadow: 0.4vh 0vh 2vh 0.2vh lightblue;
+  border: 1px solid black;
+  border-radius: 1em;
+  display: flex;
+  width: 100%;
+  margin-top: 10vh;
+}
+
+.report-child {
+  flex: 1;
+  margin: 10px;
+}
+
+.report-calendar {
+  margin: 10vh;
+  margin-right: 20px;
+}
+
+.form-button {
+  background-color: #00ace6;
+  color: white;
+  padding: 1.4vh 2vh;
+  margin: 0.8vh 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  border-radius: 2vh;
+}
+
+#file-button {
+  display: block;
+  border: 2px solid #dce4ec;
+  color: #34495e;
+  cursor: pointer;
+  height: 40px;
+  line-height: 40px;
+  text-align: left;
+  background: #ffffff;
+  overflow: hidden;
+  position: relative;
+  margin-top: 2vh;
+  margin-bottom: 4vh;
+}
+
+select {
+  background-color: transparent;
+  padding: 0 1em 0 0;
+  margin: 0;
+  border: 1px solid #777;
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: inherit;
+  line-height: inherit;
+}
+
+#upld-type-label {
+  width: 140%;
+  height: 4vh;
+  margin-bottom: 4vh;
+  position: relative;
+  display: inline-block;
+}
+
+#upld-sessn-label {
+  width: 140%;
+  height: 4vh;
+  margin-bottom: 4vh;
+  position: relative;
+  display: inline-block;
+}
+
+#gen-type-label {
+  width: 140%;
+  height: 4vh;
+  margin-bottom: 4vh;
+  position: relative;
+  display: inline-block;
+}
+
+#gen-sessn-label {
+  width: 140%;
+  height: 4vh;
+  margin-bottom: 4vh;
+  position: relative;
+  display: inline-block;
+}
+
+.report-table-container {
+  margin-top: 2vh;
+  overflow: scroll;
+  white-space: nowrap;
+  height: 30vh;
+}
+
+.report-table {
+  background-color: #dce4ec;
+  padding: 1rem;
+}
+
+.pagination-select {
+  width: 40%;
+}
+
+table {
+  border-spacing: 0;
+  border: 1px solid black;
+}
+
+table tr :last-child td {
+  border-bottom: 0;
+}
+
+table th,
+table td {
+  margin: 0;
+  padding: 0.5rem;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
+}
+
+table th :last-child,
+table td :last-child {
+  border-right: 0;
+}
+
+.pagination {
+  padding: 0.5rem;
+}

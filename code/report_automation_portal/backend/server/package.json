@@ -41,7 +41,8 @@
     "lint-staged": "^13.2.1",
     "nodemon": "^2.0.22",
     "prettier": "2.8.7",
-    "supertest": "^6.3.3"
+    "supertest": "^6.3.3",
+    "supertest-session": "^4.1.0"
   },
   "lint-staged": {
     "*.js": [
