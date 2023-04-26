@@ -19,7 +19,6 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [userType, setUserType] = useState(null);
   const [failLogin, setFailLogin] = useState(null);
-  console.log(currentUser, userType, failLogin);
   return (
     <UserContext.Provider
       value={useMemo(

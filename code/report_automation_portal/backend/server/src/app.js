@@ -131,8 +131,8 @@ const makeApp = async (userFunc, reportFunc) => {
     } else if (
       !req.body.username ||
       !req.body.password ||
-      !req.body.usertype ||
-      !req.body.userrole
+      !req.body.user_type ||
+      !req.body.user_role
     ) {
       addMesg = {
         message: 'User details insufficient, please check all the fields.',
@@ -147,8 +147,8 @@ const makeApp = async (userFunc, reportFunc) => {
         [addSts, addMesg] = await userFunc.addUser(
           req.body.username,
           req.body.password,
-          req.body.usertype,
-          req.body.userrole
+          req.body.user_type,
+          req.body.user_role
         );
       } catch (err) {
         console.error('Could not add the user', err);
@@ -188,8 +188,8 @@ const makeApp = async (userFunc, reportFunc) => {
           [updtSts, updtMesg] = await userFunc.modUserByAdmin(
             req.body.username,
             req.body.password,
-            req.body.usertype,
-            req.body.userrole
+            req.body.user_type,
+            req.body.user_role
           );
         } catch (err) {
           console.error('Could not update user by admin.', err);
