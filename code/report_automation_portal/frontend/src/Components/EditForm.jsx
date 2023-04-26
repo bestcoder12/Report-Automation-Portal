@@ -4,10 +4,10 @@ import updateUser from './UpdateUser.js';
 import DropDownMenu from './DropDownMenu';
 
 export default function EditForm({ user, onSave, onCancel }) {
-  const [username, setUsername] = useState();
-  const [passwrd, setPasswrd] = useState();
-  const [userType, setUserType] = useState();
-  const [userRole, setUserRole] = useState();
+  const [username, setUsername] = useState(user ? user.username : '');
+  const [passwrd, setPasswrd] = useState('');
+  const [userType, setUserType] = useState(user ? user.user_type : '');
+  const [userRole, setUserRole] = useState(user ? user.user_role : '');
 
   const userTypeOpts = [
     { label: 'Regular User', value: 'Regular' },
@@ -31,10 +31,6 @@ export default function EditForm({ user, onSave, onCancel }) {
     }
   }, [user]);
 
-  const handleUserName = (e) => {
-    setUsername(e.target.value);
-  };
-
   const handlePasswrd = (e) => {
     setPasswrd(e.target.value);
   };
@@ -57,7 +53,7 @@ export default function EditForm({ user, onSave, onCancel }) {
       user_role: userRole,
     };
     const response = await updateUser(editUser);
-    if (response.statusCode !== 200) {
+    if (response.statusCode !== 201) {
       return <div>response.data.message</div>;
     }
     onSave(editUser);
@@ -80,7 +76,7 @@ export default function EditForm({ user, onSave, onCancel }) {
         name="username"
         id="username"
         value={username}
-        onChange={handleUserName}
+        readOnly
       />
       <input
         type="text"

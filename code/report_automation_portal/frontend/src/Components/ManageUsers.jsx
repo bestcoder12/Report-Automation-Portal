@@ -17,26 +17,39 @@ export default function ManageUsers() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [delUser, setDelUser] = useState();
 
-  const handleEdit = useCallback(
-    (original) => {
-      setEditData(original);
-      setToggleEdit(!toggleEdit);
-    },
-    [toggleEdit]
-  );
+  const handleEdit = useCallback((original) => {
+    setEditData(original);
+    setToggleEdit(true);
+  }, []);
 
-  const handleEditSave = useCallback(() => {
-    setUserData(
-      userData.map((user) => {
-        if (user.username === editData.username) {
-          return editData;
-        }
-        return user;
-      })
-    );
-    setEditData(null);
-    setToggleEdit(false);
-  }, [userData, editData]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await getUsers();
+      if (response.statusCode !== 200) {
+        setUserData([]);
+      }
+      setUserData(response.data);
+    };
+    fetchData();
+  }, []);
+
+  const data = useMemo(() => userData, [userData]);
+
+  const handleEditSave = useCallback(
+    (editUser) => {
+      setUserData(
+        userData.map((user) => {
+          if (user.username === editUser.username) {
+            return editUser;
+          }
+          return user;
+        })
+      );
+      setEditData(null);
+      setToggleEdit(false);
+    },
+    [userData]
+  );
 
   const handleOnCancel = useCallback(() => {
     setEditData(null);
@@ -106,19 +119,6 @@ export default function ManageUsers() {
     ],
     [renderActionCells]
   );
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await getUsers();
-      if (response.statusCode !== 200) {
-        setUserData([]);
-      }
-      setUserData(response.data);
-    };
-    fetchData();
-  }, []);
-
-  const data = useMemo(() => userData, [userData]);
 
   const userTypeOpts = [
     { label: 'Regular User', value: 'Regular' },

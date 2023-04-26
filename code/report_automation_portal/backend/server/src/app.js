@@ -196,21 +196,21 @@ const makeApp = async (userFunc, reportFunc) => {
         }
       } else {
         updtMesg = { message: 'The change to other user is not allowed.' };
-      }
-      if (
-        req.body.username === req.session.user &&
-        req.session.utype.toLowerCase() === 'regular'
-      ) {
-        try {
-          [updtSts, updtMesg] = await userFunc.modUserByRegular(
-            req.body.username,
-            req.body.password
-          );
-        } catch (err) {
-          console.error('Could not update user by regular user.', err);
+        if (
+          req.body.username === req.session.user &&
+          req.session.utype.toLowerCase() === 'regular'
+        ) {
+          try {
+            [updtSts, updtMesg] = await userFunc.modUserByRegular(
+              req.body.username,
+              req.body.password
+            );
+          } catch (err) {
+            console.error('Could not update user by regular user.', err);
+          }
+        } else {
+          updtMesg = { message: 'Could not perform operation' };
         }
-      } else {
-        updtMesg = { message: 'Could not perform operation' };
       }
       res.status(updtSts).json(updtMesg);
     }
