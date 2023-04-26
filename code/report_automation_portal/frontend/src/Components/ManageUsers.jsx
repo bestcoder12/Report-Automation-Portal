@@ -1,26 +1,54 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import getUsers from './GetUsers.js';
 import createUser from './CreateUser.js';
 import ResSideBar from './SideBar.jsx';
 import DispTable from './DispTable.jsx';
 import './LayoutReportStyle.css';
+import './LayoutManageUsers.css';
 import DropDownMenu from './DropDownMenu.jsx';
+import ActionCells from './ActionCells.jsx';
 
 export default function ManageUsers() {
-  const [userCols, setUserCols] = useState([
-    {
-      Header: 'Username',
-      accessor: 'username',
-    },
-    {
-      Header: 'User Type',
-      accessor: 'user_type',
-    },
-    {
-      Header: 'User Role',
-      accessor: 'user_role',
-    },
-  ]);
+  const [toggleEdit, setToggleEdit] = useState(false);
+  const handleEdit = useCallback(async () => {
+    setToggleEdit(!toggleEdit);
+    console.log(toggleEdit);
+  }, [toggleEdit]);
+
+  const handleDelete = useCallback(async () => <div />, []);
+
+  const renderActionCells = useCallback(
+    ({ original }) => (
+      <ActionCells
+        original={original}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+    ),
+    [handleEdit, handleDelete]
+  );
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'Username',
+        accessor: 'username',
+      },
+      {
+        Header: 'User Type',
+        accessor: 'user_type',
+      },
+      {
+        Header: 'User Role',
+        accessor: 'user_role',
+      },
+      {
+        Header: 'Actions',
+        Cell: renderActionCells,
+      },
+    ],
+    [renderActionCells]
+  );
 
   const [userData, setUserData] = useState();
 
@@ -33,8 +61,6 @@ export default function ManageUsers() {
       setUserData(response.data);
     })();
   });
-
-  const columns = useMemo(() => userCols, [userCols]);
 
   const data = useMemo(() => userData, [userData]);
 
@@ -72,17 +98,6 @@ export default function ManageUsers() {
     setUserRole(e.target.value);
   };
 
-  /* const handleFormChange = (e) => {
-    e.preventDefault();
-
-    const fieldName = e.target.getAttribute('name');
-    const fieldValue = e.target.value;
-
-    const newUserData = { ...newUser };
-    newUserData[fieldName] = fieldValue;
-    setNewUser(newUserData);
-  }; */
-
   const handleUsername = (e) => {
     e.preventDefault();
     setUserName(e.target.value);
@@ -92,10 +107,6 @@ export default function ManageUsers() {
     e.preventDefault();
     setPasswrd(e.target.value);
   };
-
-  /* const handleAddUser = async () => {
-    setCreateUser(true);
-  }; */
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
@@ -111,7 +122,6 @@ export default function ManageUsers() {
       delete newUserData.password;
       const newTableRows = [...data, newUserData];
       setUserData(newTableRows);
-      setUserCols(userCols);
     }
   };
 
@@ -127,7 +137,12 @@ export default function ManageUsers() {
         </div>
         <div className="add-button">
           {toggleUserForm ? (
-            <form action="" method="POST" onSubmit={handleCreateUser}>
+            <form
+              action=""
+              method="POST"
+              onSubmit={handleCreateUser}
+              className="form-users"
+            >
               <input
                 type="text"
                 name="username"

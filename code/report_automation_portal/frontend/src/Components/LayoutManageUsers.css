@@ -1,0 +1,79 @@
+.table-users {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.table-users th,
+.table-users td {
+  padding: 8px;
+  text-align: center;
+}
+
+.table-users th {
+  font-weight: bold;
+  background-color: #f2f2f2;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.table-users td {
+  border: 1px solid #ddd;
+}
+
+/* Button styling */
+.button-users {
+  display: inline-block;
+  padding: 8px;
+  border-radius: 4px;
+  /* background-color: #4CAF50; */
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* .button-users:hover {
+    background-color: #3e8e41;
+} */
+
+.button-users:nth-child(1) {
+  background-color: #fdd835;
+}
+
+.button-users:nth-child(1):hover {
+  background-color: #fbc02d;
+}
+
+/* Delete button-users styling */
+.button-users:last-child {
+  background-color: #f44336;
+}
+
+.button-users:last-child:hover {
+  background-color: #e53935;
+}
+
+/* Form styling */
+.form-users {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-users input {
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.form-users button {
+  margin: 16px 0;
+}
