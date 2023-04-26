@@ -13,12 +13,35 @@ import EditForm from './EditForm.jsx';
 export default function ManageUsers() {
   const [userData, setUserData] = useState();
   const [toggleEdit, setToggleEdit] = useState(false);
+  const [editData, setEditData] = useState();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [delUser, setDelUser] = useState();
 
-  const handleEdit = useCallback(async () => {
-    setToggleEdit(!toggleEdit);
-  }, [toggleEdit]);
+  const handleEdit = useCallback(
+    (original) => {
+      setEditData(original);
+      setToggleEdit(!toggleEdit);
+    },
+    [toggleEdit]
+  );
+
+  const handleEditSave = useCallback(() => {
+    setUserData(
+      userData.map((user) => {
+        if (user.username === editData.username) {
+          return editData;
+        }
+        return user;
+      })
+    );
+    setEditData(null);
+    setToggleEdit(false);
+  }, [userData, editData]);
+
+  const handleOnCancel = useCallback(() => {
+    setEditData(null);
+    setToggleEdit(false);
+  }, []);
 
   const openConfirmation = useCallback(
     (original) => {
@@ -230,7 +253,13 @@ export default function ManageUsers() {
             value="Add User"
             onClick={() => setToggleUserForm(!toggleUserForm)}
           />
-          {toggleEdit && <EditForm />}
+          {toggleEdit && (
+            <EditForm
+              user={editData}
+              onSave={handleEditSave}
+              onCancel={handleOnCancel}
+            />
+          )}
         </div>
       </div>
     </div>

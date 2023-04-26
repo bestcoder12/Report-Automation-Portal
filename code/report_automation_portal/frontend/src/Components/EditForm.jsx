@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import updateUser from './UpdateUser.js';
 import DropDownMenu from './DropDownMenu';
 
-export default function EditForm({ userData, onSave, onCancel }) {
+export default function EditForm({ user, onSave, onCancel }) {
   const [username, setUsername] = useState();
   const [passwrd, setPasswrd] = useState();
   const [userType, setUserType] = useState();
@@ -24,12 +24,12 @@ export default function EditForm({ userData, onSave, onCancel }) {
   ];
 
   useEffect(() => {
-    if (userData) {
-      setUsername(userData.username);
-      setUserType(userData.user_type);
-      setUserRole(userData.user_role);
+    if (user) {
+      setUsername(user.username);
+      setUserType(user.user_type);
+      setUserRole(user.user_role);
     }
-  }, [userData]);
+  }, [user]);
 
   const handleUserName = (e) => {
     setUsername(e.target.value);
@@ -115,7 +115,7 @@ export default function EditForm({ userData, onSave, onCancel }) {
 }
 
 EditForm.defaultProps = {
-  userData: {
+  user: {
     username: '',
     user_type: '',
     user_role: '',
@@ -125,7 +125,7 @@ EditForm.defaultProps = {
 };
 
 EditForm.propTypes = {
-  userData: PropTypes.shape({
+  user: PropTypes.shape({
     username: PropTypes.string,
     user_type: PropTypes.string,
     user_role: PropTypes.string,
