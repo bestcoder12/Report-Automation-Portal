@@ -9,23 +9,49 @@ import DropDownMenu from './DropDownMenu.jsx';
 import ActionCells from './ActionCells.jsx';
 
 export default function ManageUsers() {
+  const [userData, setUserData] = useState();
   const [toggleEdit, setToggleEdit] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [delUser, setDelUser] = useState();
   const handleEdit = useCallback(async () => {
     setToggleEdit(!toggleEdit);
     console.log(toggleEdit);
   }, [toggleEdit]);
 
-  const handleDelete = useCallback(async () => <div />, []);
+  const openConfirmation = useCallback(
+    (original) => {
+      setDelUser(original);
+      setShowConfirmation(true);
+    },
+    [setDelUser, setShowConfirmation]
+  );
+
+  const closeConfirmation = () => {
+    setDelUser(null);
+    setShowConfirmation(false);
+  };
+
+  const handleDelete = useCallback(() => {
+    const updatedUsers = userData.filter(
+      (user) => user.username !== delUser.id
+    );
+    setUserData(updatedUsers);
+  }, [userData, delUser]);
+
+  const deleteUser = () => {
+    handleDelete(delUser);
+    closeConfirmation();
+  };
 
   const renderActionCells = useCallback(
     ({ original }) => (
       <ActionCells
         original={original}
         onEdit={handleEdit}
-        onDelete={handleDelete}
+        onDelete={openConfirmation}
       />
     ),
-    [handleEdit, handleDelete]
+    [handleEdit, openConfirmation]
   );
 
   const columns = useMemo(
@@ -49,8 +75,6 @@ export default function ManageUsers() {
     ],
     [renderActionCells]
   );
-
-  const [userData, setUserData] = useState();
 
   useEffect(() => {
     (async () => {
@@ -135,6 +159,23 @@ export default function ManageUsers() {
         <div className="report-table-container">
           <DispTable columns={columns} data={data} />
         </div>
+        {showConfirmation && (
+          <div className="confirmation-message">
+            <p>Are you sure you want to delete {delUser.name}?</p>
+            <input
+              type="button"
+              className="confirm-button"
+              value="Yes"
+              onClick={deleteUser}
+            />
+            <input
+              type="button"
+              className="cancel-button"
+              value="No"
+              onClick={closeConfirmation}
+            />
+          </div>
+        )}
         <div className="add-button">
           {toggleUserForm ? (
             <form
