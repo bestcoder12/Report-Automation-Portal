@@ -1,8 +1,8 @@
-import request from 'supertest';
+// import request from 'supertest';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { jest } from '@jest/globals';
 // eslint-disable-next-line import/no-extraneous-dependencies
-// import Session from 'supertest-session';
+import supertestSession from 'supertest-session';
 import makeApp from '../app.js';
 import userOps from '../../middleware/db_user.js';
 import testData from './appTestData';
@@ -130,6 +130,16 @@ userFunc.deleteUser.mockImplementation(async (uname) => {
 
 const app = await makeApp(userFunc);
 
+const { session } = supertestSession(app);
+session.setSession('mocksid', {
+  cookie: {
+    maxAge: 60 * 60 * 1000,
+  },
+  validSession: true,
+  username: testData.corrAdminUsers[0].username,
+  utype: 'Admin',
+});
+
 describe('User addition endpoint', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -137,14 +147,14 @@ describe('User addition endpoint', () => {
 
   test('should call userAdd() function in the request', async () => {
     const userObj = testData.nonExistUser[0];
-    const response = await request(app).post('/users/add-user').send(userObj);
+    const response = await session.post('/users/add-user').send(userObj);
     console.log(response);
     expect(userFunc.addUser).toHaveBeenCalled();
   });
 
   test('should call userAdd() function only once per request', async () => {
     const userObj = testData.nonExistUser[0];
-    await request(app).post('/users/add-user').send(userObj);
+    await session.post('/users/add-user').send(userObj);
     expect(userFunc.addUser).toHaveBeenCalledTimes(1);
   });
 
@@ -152,9 +162,7 @@ describe('User addition endpoint', () => {
     const userInfo = testData.nonExistUser;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await request(app)
-          .post('/users/add-user')
-          .send(userObj);
+        const response = await session.post('/users/add-user').send(userObj);
         expect(response.statusCode).toBe(200);
       })
     );
@@ -165,9 +173,7 @@ describe('User addition endpoint', () => {
 
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await request(app)
-          .post('/users/add-user')
-          .send(userObj);
+        const response = await session.post('/users/add-user').send(userObj);
         expect(response.statusCode).toBe(400);
       })
     );
@@ -177,9 +183,7 @@ describe('User addition endpoint', () => {
     const userInfo = testData.missUserParams;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await request(app)
-          .post('/users/add-user')
-          .send(userObj);
+        const response = await session.post('/users/add-user').send(userObj);
         expect(response.statusCode).toBe(400);
       })
     );
@@ -193,10 +197,10 @@ describe('Get user details endpoint', () => {
 
   test('should call getUserDetails() function', async () => {
     const userObj = testData.corrAdminUsers[0];
-    const response = await request(app)
+    const response = await session
       .post('/users/login-user')
       .send({ username: userObj.username, password: userObj.password });
-    await request(app)
+    await session
       .get('/users/details-user')
       .set(response.Cookie)
       .send({ username: userObj.username });
@@ -205,10 +209,10 @@ describe('Get user details endpoint', () => {
 
   test('should call getUserDetails() function exactly once per request', async () => {
     const userObj = testData.corrAdminUsers[0];
-    await request(app)
+    await session
       .post('/users/login-user')
       .send({ username: userObj.username, password: userObj.password });
-    await request(app)
+    await session
       .get('/users/details-user')
       .send({ username: userObj.username });
     expect(userFunc.getUserDetails).toHaveBeenCalledTimes(1);
@@ -218,10 +222,10 @@ describe('Get user details endpoint', () => {
     const userInfo = testData.corrAdminUsers;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        await request(app)
+        await session
           .post('/users/login-user')
           .send({ username: userObj.username, password: userObj.password });
-        const response = await request(app)
+        const response = await session
           .get('/users/details-user')
           .send({ username: userObj.username });
         expect(response.statusCode).toBe(200);
@@ -233,10 +237,10 @@ describe('Get user details endpoint', () => {
     const userInfo = testData.corrAdminUsers;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        await request(app)
+        await session
           .post('/users/login-user')
           .send({ username: userObj.username, password: userObj.password });
-        const response = await request(app)
+        const response = await session
           .get('/users/details-user')
           .send({ username: userObj.username });
         expect(
@@ -256,7 +260,7 @@ describe('Login user endpoint', () => {
 
   test('should call the getPassHash() function', async () => {
     const userObj = testData.corrUsers[0];
-    await request(app).post('/users/login-user').send({
+    await session.post('/users/login-user').send({
       username: userObj.username,
       password: userObj.password,
     });
@@ -265,7 +269,7 @@ describe('Login user endpoint', () => {
 
   test('should call getPassHash() only once per request', async () => {
     const userObj = testData.corrUsers[0];
-    await request(app).post('/users/login-user').send({
+    await session.post('/users/login-user').send({
       username: userObj.username,
       password: userObj.password,
     });
@@ -276,9 +280,7 @@ describe('Login user endpoint', () => {
     const userInfo = testData.corrUsers;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await request(app)
-          .post('/users/login-user')
-          .send(userObj);
+        const response = await session.post('/users/login-user').send(userObj);
         expect(response.statusCode).toBe(200);
       })
     );
@@ -288,9 +290,7 @@ describe('Login user endpoint', () => {
     const userInfo = testData.insuffUserPass;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await request(app)
-          .post('/users/login-user')
-          .send(userObj);
+        const response = await session.post('/users/login-user').send(userObj);
         expect(response.statusCode).toBe(401);
       })
     );
@@ -300,9 +300,7 @@ describe('Login user endpoint', () => {
     const userInfo = testData.nonExistUser;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await request(app)
-          .post('/users/login-user')
-          .send(userObj);
+        const response = await session.post('/users/login-user').send(userObj);
         expect(response.statusCode).toBe(404);
       })
     );
@@ -312,9 +310,7 @@ describe('Login user endpoint', () => {
     const userInfo = testData.missUserParams;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await request(app)
-          .post('/users/login-user')
-          .send(userObj);
+        const response = await session.post('/users/login-user').send(userObj);
         if (!userObj.username) {
           expect(response.statusCode).toBe(404);
         } else if (!userObj.password) {
@@ -332,34 +328,34 @@ describe('Modify user endpoint', () => {
 
   test('should call modUserByAdmin() function', async () => {
     const userInfo = testData.corrAdminUsers[0];
-    await request(app)
+    await session
       .post('/users/login-user')
       .send({ username: userInfo.username, password: userInfo.password });
-    await request(app).put('/users/modify-user').send(userInfo);
+    await session.put('/users/modify-user').send(userInfo);
     expect(userFunc.modUserByAdmin).toHaveBeenCalled();
   });
 
   test('should call modUserByAdmin() function only once per request', async () => {
     const userInfo = testData.corrAdminUsers[0];
-    await request(app)
+    await session
       .post('/users/login-user')
       .send({ username: userInfo.username, password: userInfo.password });
-    await request(app).put('/users/modify-user').send(userInfo);
+    await session.put('/users/modify-user').send(userInfo);
     expect(userFunc.modUserByAdmin).toHaveBeenCalledTimes(1);
   });
 
   test('should call modUserByRegular() function', async () => {
     const userInfo = testData.regularUsers[0];
-    await request(app)
+    await session
       .post('/users/login-user')
       .send({ username: userInfo.username, password: userInfo.password });
-    await request(app).put('/users/modify-user').send(userInfo);
+    await session.put('/users/modify-user').send(userInfo);
     expect(userFunc.modUserByRegular).toHaveBeenCalled();
   });
 
   test('should call modUserByRegular() function only once per request', async () => {
     const userInfo = testData.regularUsers[0];
-    await request(app).put('/users/modify-user').send(userInfo);
+    await session.put('/users/modify-user').send(userInfo);
     expect(userFunc.modUserByRegular).toHaveBeenCalledTimes(1);
   });
 
@@ -367,9 +363,7 @@ describe('Modify user endpoint', () => {
     const userInfo = testData.corrAdminUsers;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await request(app)
-          .put('/users/modify-user')
-          .send(userObj);
+        const response = await session.put('/users/modify-user').send(userObj);
         expect(response.statusCode).toBe(201);
       })
     );
@@ -379,9 +373,7 @@ describe('Modify user endpoint', () => {
     const userInfo = testData.nonExistUser;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await request(app)
-          .put('/users/modify-user')
-          .send(userObj);
+        const response = await session.put('/users/modify-user').send(userObj);
         expect(response.statusCode).toBe(404);
       })
     );
@@ -391,9 +383,7 @@ describe('Modify user endpoint', () => {
     const userInfo = testData.missUserParams;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await request(app)
-          .put('/users/modify-user')
-          .send(userObj);
+        const response = await session.put('/users/modify-user').send(userObj);
         if (!userObj.username) expect(response.statusCode).toBe(404);
         else expect(response.statusCode).toBe(400);
       })
@@ -408,13 +398,13 @@ describe('Delete user endpoint', () => {
 
   test('should call deleteUser() function', async () => {
     const userInfo = testData.corrAdminUsers[0];
-    await request(app).delete('/users/delete-user').send(userInfo);
+    await session.delete('/users/delete-user').send(userInfo);
     expect(userFunc.deleteUser).toHaveBeenCalled();
   });
 
   test('should call deleteUser() function only once per request', async () => {
     const userInfo = testData.corrAdminUsers[0];
-    await request(app).delete('/users/delete-user').send(userInfo);
+    await session.delete('/users/delete-user').send(userInfo);
     expect(userFunc.deleteUser).toHaveBeenCalledTimes(1);
   });
 
@@ -422,7 +412,7 @@ describe('Delete user endpoint', () => {
     const userInfo = testData.corrAdminUsers;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await request(app)
+        const response = await session
           .delete('/users/delete-user')
           .send(userObj);
         expect(response.statusCode).toBe(200);
@@ -432,9 +422,7 @@ describe('Delete user endpoint', () => {
 
   test('should return status code of 404 for missing username', async () => {
     const userInfo = { username: '' };
-    const response = await request(app)
-      .delete('/users/delete-user')
-      .send(userInfo);
+    const response = await session.delete('/users/delete-user').send(userInfo);
     expect(response.statusCode).toBe(404);
   });
 
@@ -442,7 +430,7 @@ describe('Delete user endpoint', () => {
     const userInfo = testData.nonExistUser;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await request(app)
+        const response = await session
           .delete('/users/delete-user')
           .send(userObj);
         expect(response.statusCode).toBe(404);
