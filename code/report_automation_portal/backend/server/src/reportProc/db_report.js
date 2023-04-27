@@ -350,7 +350,7 @@ const reportOps = async (db) => {
       'INSERT INTO olt_ticket VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
     await Promise.all(
       actData.map(async (rowData) => {
-        let resOltNetQuery;
+        let resMismtchOntQuery;
         const gpCode = await getGPCode(rowData['OLT LOCATION'], rowData.BLOCK);
         let resRowData;
         if (gpCode !== undefined) {
@@ -366,7 +366,7 @@ const reportOps = async (db) => {
             })
           );
           try {
-            resOltNetQuery = await db.query(
+            resMismtchOntQuery = await db.query(
               storeMismtchOntQuery,
               [reportId, gpCode.gp_code].concat(Object.values(resRowData))
             );
@@ -374,7 +374,7 @@ const reportOps = async (db) => {
             console.error('Could not add row to the database.', err);
           }
 
-          if (resOltNetQuery.affectedRows !== [1]) {
+          if (resMismtchOntQuery.affectedRows !== [1]) {
             retVal = [
               500,
               { message: 'The data could not be inserted into the database.' },
@@ -402,6 +402,85 @@ const reportOps = async (db) => {
           console.error('Could not store data to the database.', err);
         }
         if (resStoreOltStatus.affectedRows !== [1]) {
+          retVal = [
+            500,
+            { message: 'The data could not be inserted into the database.' },
+          ];
+        }
+        retVal = [200, { message: 'The data was uploaded successfully.' }];
+      })
+    );
+    return retVal;
+  };
+
+  const storeOntStatus = async (reportId, storeData) => {
+    const storeOntStatusQuery =
+      'INSERT INTO ont_status VALUES (?,?,?,?,?,?,?,?);';
+    let resStoreOntStatus;
+    let retVal;
+    await Promise.all(
+      storeData.map(async (rowData) => {
+        try {
+          resStoreOntStatus = await db.query(
+            storeOntStatusQuery,
+            [reportId].concat(Object.values(rowData))
+          );
+        } catch (err) {
+          console.error('Could not store data to the database.', err);
+        }
+        if (resStoreOntStatus.affectedRows !== [1]) {
+          retVal = [
+            500,
+            { message: 'The data could not be inserted into the database.' },
+          ];
+        }
+        retVal = [200, { message: 'The data was uploaded successfully.' }];
+      })
+    );
+    return retVal;
+  };
+
+  const storeMarkDel = async (reportId, storeData) => {
+    const storeMarkDelQuery = 'INSERT INTO ont_status VALUES (?,?,?,?);';
+    let resStoreMarkDel;
+    let retVal;
+    await Promise.all(
+      storeData.map(async (rowData) => {
+        try {
+          resStoreMarkDel = await db.query(
+            storeMarkDelQuery,
+            [reportId].concat(Object.values(rowData))
+          );
+        } catch (err) {
+          console.error('Could not store data to the database.', err);
+        }
+        if (resStoreMarkDel.affectedRows !== [1]) {
+          retVal = [
+            500,
+            { message: 'The data could not be inserted into the database.' },
+          ];
+        }
+        retVal = [200, { message: 'The data was uploaded successfully.' }];
+      })
+    );
+    return retVal;
+  };
+
+  const storeLocConfigPending = async (reportId, storeData) => {
+    const storeLocConfigPendingQuery = 'INSERT INTO ont_status VALUES (?,?,?);';
+    let resStoreLocConfigPending;
+    let retVal;
+    await Promise.all(
+      storeData.map(async (rowData) => {
+        try {
+          resStoreLocConfigPending = await db.query(
+            storeLocConfigPendingQuery,
+            [reportId].concat(Object.values(rowData))
+          );
+        } catch (err) {
+          console.error('Could not store data to the database.', err);
+        }
+        if (resStoreLocConfigPending.affectedRows !== [1]) {
           retVal = [
             500,
             { message: 'The data could not be inserted into the database.' },
@@ -563,6 +642,252 @@ const reportOps = async (db) => {
     ];
   };
 
+  const genOntStatus = async (reportId) => {
+    const genOntStatusQuery = ``;
+
+    let resGenOntStatus;
+    const splitId = reportId.split('$');
+    const reportType = splitId[0];
+    splitId[0] = 'ont-net-provider';
+    const srcReportId = splitId.join('$');
+    const srcReportExists = await chkReportExists(srcReportId);
+    if (!srcReportExists) {
+      return [
+        404,
+        {
+          message:
+            'The report type required for generating the report does not exist.',
+        },
+      ];
+    }
+    try {
+      [resGenOntStatus] = await db.query(genOntStatusQuery, [
+        srcReportId,
+        srcReportId,
+        srcReportId,
+        srcReportId,
+      ]);
+    } catch (err) {
+      console.error('Could not generate the report from the database.', err);
+    }
+    let resFileStore;
+    let filePath;
+    try {
+      [resFileStore, , filePath] = await storeDataAsXLSX(
+        reportId,
+        resGenOntStatus
+      );
+    } catch (err) {
+      console.error('Could not store the file to the server.', err);
+    }
+    if (resFileStore !== 200) {
+      return resFileStore;
+    }
+    try {
+      [resFileStore] = await storeReportToServer(
+        reportType,
+        splitId[1],
+        splitId[2],
+        filePath
+      );
+    } catch (err) {
+      console.error('Could not store the file information to database.', err);
+    }
+    if (resFileStore !== 200) {
+      return resFileStore;
+    }
+    let resStoreOntStatus;
+    try {
+      resStoreOntStatus = await storeOntStatus(reportId, resGenOntStatus);
+    } catch (err) {
+      console.error('Could not store the data to the database.', err);
+    }
+    if (resStoreOntStatus[0] !== 200) {
+      return resStoreOntStatus;
+    }
+    try {
+      resStoreOntStatus = await storeDataAsXLSX(splitId[1], resGenOntStatus);
+    } catch (err) {
+      console.error('Could not store the file to the server.', err);
+    }
+    if (resStoreOntStatus[0] !== 200) {
+      return resStoreOntStatus;
+    }
+    return [
+      200,
+      {
+        rows: resGenOntStatus,
+        metaData: reportArr[reportType],
+      },
+    ];
+  };
+
+  const genMarkDel = async (reportId) => {
+    const genMarkDelQuery = ``;
+
+    let resGenMarkDel;
+    const splitId = reportId.split('$');
+    const reportType = splitId[0];
+    splitId[0] = 'ont-net-provider';
+    const srcReportId = splitId.join('$');
+    const srcReportExists = await chkReportExists(srcReportId);
+    if (!srcReportExists) {
+      return [
+        404,
+        {
+          message:
+            'The report type required for generating the report does not exist.',
+        },
+      ];
+    }
+    try {
+      [resGenMarkDel] = await db.query(genMarkDelQuery, [
+        srcReportId,
+        srcReportId,
+        srcReportId,
+        srcReportId,
+      ]);
+    } catch (err) {
+      console.error('Could not generate the report from the database.', err);
+    }
+    let resFileStore;
+    let filePath;
+    try {
+      [resFileStore, , filePath] = await storeDataAsXLSX(
+        reportId,
+        resGenMarkDel
+      );
+    } catch (err) {
+      console.error('Could not store the file to the server.', err);
+    }
+    if (resFileStore !== 200) {
+      return resFileStore;
+    }
+    try {
+      [resFileStore] = await storeReportToServer(
+        reportType,
+        splitId[1],
+        splitId[2],
+        filePath
+      );
+    } catch (err) {
+      console.error('Could not store the file information to database.', err);
+    }
+    if (resFileStore !== 200) {
+      return resFileStore;
+    }
+    let resStoreOntStatus;
+    try {
+      resStoreOntStatus = await storeMarkDel(reportId, resGenMarkDel);
+    } catch (err) {
+      console.error('Could not store the data to the database.', err);
+    }
+    if (resStoreOntStatus[0] !== 200) {
+      return resStoreOntStatus;
+    }
+    try {
+      resStoreOntStatus = await storeDataAsXLSX(splitId[1], resGenMarkDel);
+    } catch (err) {
+      console.error('Could not store the file to the server.', err);
+    }
+    if (resStoreOntStatus[0] !== 200) {
+      return resStoreOntStatus;
+    }
+    return [
+      200,
+      {
+        rows: resGenMarkDel,
+        metaData: reportArr[reportType],
+      },
+    ];
+  };
+
+  const genLocConfigPending = async (reportId) => {
+    const genLocConfigPendingQuery = ``;
+
+    let resGenLocConfigPending;
+    const splitId = reportId.split('$');
+    const reportType = splitId[0];
+    splitId[0] = 'ont-net-provider';
+    const srcReportId = splitId.join('$');
+    const srcReportExists = await chkReportExists(srcReportId);
+    if (!srcReportExists) {
+      return [
+        404,
+        {
+          message:
+            'The report type required for generating the report does not exist.',
+        },
+      ];
+    }
+    try {
+      [resGenLocConfigPending] = await db.query(genLocConfigPendingQuery, [
+        srcReportId,
+        srcReportId,
+        srcReportId,
+        srcReportId,
+      ]);
+    } catch (err) {
+      console.error('Could not generate the report from the database.', err);
+    }
+    let resFileStore;
+    let filePath;
+    try {
+      [resFileStore, , filePath] = await storeDataAsXLSX(
+        reportId,
+        resGenLocConfigPending
+      );
+    } catch (err) {
+      console.error('Could not store the file to the server.', err);
+    }
+    if (resFileStore !== 200) {
+      return resFileStore;
+    }
+    try {
+      [resFileStore] = await storeReportToServer(
+        reportType,
+        splitId[1],
+        splitId[2],
+        filePath
+      );
+    } catch (err) {
+      console.error('Could not store the file information to database.', err);
+    }
+    if (resFileStore !== 200) {
+      return resFileStore;
+    }
+    let resStoreOntStatus;
+    try {
+      resStoreOntStatus = await storeLocConfigPending(
+        reportId,
+        resGenLocConfigPending
+      );
+    } catch (err) {
+      console.error('Could not store the data to the database.', err);
+    }
+    if (resStoreOntStatus[0] !== 200) {
+      return resStoreOntStatus;
+    }
+    try {
+      resStoreOntStatus = await storeDataAsXLSX(
+        splitId[1],
+        resGenLocConfigPending
+      );
+    } catch (err) {
+      console.error('Could not store the file to the server.', err);
+    }
+    if (resStoreOntStatus[0] !== 200) {
+      return resStoreOntStatus;
+    }
+    return [
+      200,
+      {
+        rows: resGenLocConfigPending,
+        metaData: reportArr[reportType],
+      },
+    ];
+  };
+
   return {
     getReportId,
     chkReportExists,
@@ -574,6 +899,9 @@ const reportOps = async (db) => {
     storeMismtchOnt,
     fetchReport,
     genOltStatus,
+    genOntStatus,
+    genMarkDel,
+    genLocConfigPending,
   };
 };
 
