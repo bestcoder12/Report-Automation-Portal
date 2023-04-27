@@ -137,7 +137,7 @@ export default function ManageUsers() {
       <div className="page-container">
         <h1 className="heading">Manage Users</h1>
         <div className="report-table-container">
-          <DispTable columns={columns} data={data} />
+          <DispTable columns={columns} data={data} cssClass="table" />
         </div>
         {showConfirmation && (
           <div className="confirmation-message">

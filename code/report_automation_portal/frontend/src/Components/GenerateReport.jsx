@@ -104,7 +104,11 @@ export default function GenerateReport() {
           </div>
         </div>
         <div className="report-table-container">
-          {reportData ? <DispTable columns={columns} data={data} /> : <div />}
+          {reportData ? (
+            <DispTable columns={columns} data={data} cssClass="table" />
+          ) : (
+            <div />
+          )}
         </div>
       </div>
     </div>
