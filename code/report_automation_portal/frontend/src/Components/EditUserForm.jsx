@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import updateUser from './UpdateUser.js';
-import DropDownMenu from './DropDownMenu';
+import DropDownMenu from './DropDownMenu.jsx';
 
 export default function EditForm({ user, onSave, onCancel }) {
   const [username, setUsername] = useState(user ? user.username : '');

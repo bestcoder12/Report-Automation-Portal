@@ -93,3 +93,7 @@
 .form-users button {
   margin: 16px 0;
 }
+
+.user-container {
+  display: flex;
+}

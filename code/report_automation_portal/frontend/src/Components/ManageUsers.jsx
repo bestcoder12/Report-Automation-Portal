@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import getUsers from './GetUsers.js';
-import createUser from './CreateUser.js';
 import ResSideBar from './SideBar.jsx';
 import DispTable from './DispTable.jsx';
 import './LayoutReportStyle.css';
 import './LayoutManageUsers.css';
-import DropDownMenu from './DropDownMenu.jsx';
 import ActionCells from './ActionCells.jsx';
 import removeUser from './RemoveUser.js';
-import EditForm from './EditForm.jsx';
+import AddUserForm from './AddUserForm.jsx';
+import EditUserForm from './EditUserForm.jsx';
 
 export default function ManageUsers() {
   const [userData, setUserData] = useState();
@@ -34,6 +33,14 @@ export default function ManageUsers() {
   }, []);
 
   const data = useMemo(() => userData, [userData]);
+
+  const handleAddSave = useCallback(
+    (newUserData) => {
+      const newTableRows = [...data, newUserData];
+      setUserData(newTableRows);
+    },
+    [data]
+  );
 
   const handleEditSave = useCallback(
     (editUser) => {
@@ -120,68 +127,10 @@ export default function ManageUsers() {
     [renderActionCells]
   );
 
-  const userTypeOpts = [
-    { label: 'Regular User', value: 'Regular' },
-    { label: 'Uploading User', value: 'Uploading' },
-    { label: 'Administrator', value: 'Admin' },
-  ];
-  const [userType, setUserType] = useState(userTypeOpts[0].value);
-
-  const userRoleOpts = [
-    { label: 'CGM', value: 'CGM' },
-    { label: 'GM', value: 'GM' },
-    { label: 'DGM', value: 'DGM' },
-    { label: 'SDO', value: 'SDO' },
-    { label: 'NE', value: 'NE' },
-  ];
-  const [userRole, setUserRole] = useState(userRoleOpts[0].value);
-
   const [toggleUserForm, setToggleUserForm] = useState(false);
-  const [userName, setUserName] = useState();
-  const [passwrd, setPasswrd] = useState();
-  const [newUser, setNewUser] = useState({
-    username: 'JKL',
-    password: 'MNO',
-    user_type: 'PQR',
-    user_role: 'STU',
-  });
 
-  const handleUserType = (e) => {
-    setUserType(e.target.value);
-  };
-
-  const handleUserRole = (e) => {
-    setUserRole(e.target.value);
-  };
-
-  const handleUsername = (e) => {
-    e.preventDefault();
-    setUserName(e.target.value);
-  };
-
-  const handlePasswrd = (e) => {
-    e.preventDefault();
-    setPasswrd(e.target.value);
-  };
-
-  const handleCreateUser = async (e) => {
-    e.preventDefault();
-    setNewUser({
-      username: userName,
-      password: passwrd,
-      user_type: userType,
-      user_role: userRole,
-    });
-    const response = await createUser(newUser);
-    if (response.statusCode === 200) {
-      const newUserData = { ...newUser };
-      delete newUserData.password;
-      const newTableRows = [...data, newUserData];
-      setUserData(newTableRows);
-    }
-  };
   return (
-    <div className="report-container">
+    <div className="user-container">
       <div className="sidebar">
         <ResSideBar />
       </div>
@@ -208,53 +157,14 @@ export default function ManageUsers() {
           </div>
         )}
         <div className="add-button">
-          {toggleUserForm && (
-            <form
-              action=""
-              method="POST"
-              onSubmit={handleCreateUser}
-              className="form-users"
-            >
-              <input
-                type="text"
-                name="username"
-                id="username"
-                placeholder="Enter a username..."
-                onChange={handleUsername}
-              />
-              <input
-                type="password"
-                name="password"
-                id="password"
-                placeholder="Enter a pasword..."
-                onChange={handlePasswrd}
-              />
-              <DropDownMenu
-                domFor="add-user-type"
-                domLabelId="add-type-label"
-                label="Select type of user"
-                options={userTypeOpts}
-                value={userType}
-                onChange={handleUserType}
-              />
-              <DropDownMenu
-                domFor="add-user-role"
-                domLabelId="add-role-label"
-                label="Select role of user"
-                options={userRoleOpts}
-                value={userRole}
-                onChange={handleUserRole}
-              />
-              <button type="submit">Create user</button>
-            </form>
-          )}
+          {toggleUserForm && <AddUserForm onSave={handleAddSave} />}
           <input
             type="button"
             value="Add User"
             onClick={() => setToggleUserForm(!toggleUserForm)}
           />
           {toggleEdit && (
-            <EditForm
+            <EditUserForm
               user={editData}
               onSave={handleEditSave}
               onCancel={handleOnCancel}
