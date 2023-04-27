@@ -131,8 +131,8 @@ const makeApp = async (userFunc, reportFunc) => {
     } else if (
       !req.body.username ||
       !req.body.password ||
-      !req.body.usertype ||
-      !req.body.userrole
+      !req.body.user_type ||
+      !req.body.user_role
     ) {
       addMesg = {
         message: 'User details insufficient, please check all the fields.',
@@ -147,8 +147,8 @@ const makeApp = async (userFunc, reportFunc) => {
         [addSts, addMesg] = await userFunc.addUser(
           req.body.username,
           req.body.password,
-          req.body.usertype,
-          req.body.userrole
+          req.body.user_type,
+          req.body.user_role
         );
       } catch (err) {
         console.error('Could not add the user', err);
@@ -160,25 +160,7 @@ const makeApp = async (userFunc, reportFunc) => {
   app.get('/users/details-user', async (req, res) => {
     let detailsSts = 404;
     let detailsMesg = { '': '' };
-
-    /*  let userExist;
-    try {
-      userExist = await userFunc.checkUserExists(req.query.username);
-    } catch (err) {
-      console.error('Could not fetch user existence.', err);
-    }
-    if (!userExist) {
-      detailsMesg = { message: 'User does not exist.' };
-      res.status(detailsSts).json(detailsMesg);
-    } */
-    let isAdmin;
-    try {
-      isAdmin = userFunc.chkAdmin(req.session.user);
-    } catch (err) {
-      console.error('Could not check if user admin or not.', err);
-    }
-    if (isAdmin) {
-      // if (userFunc.chkAdmin(req.query.username)) {
+    if (req.session.utype === 'Admin') {
       [detailsSts, detailsMesg] = await userFunc.getUserDetails();
     } else {
       detailsMesg = { message: 'Could not perform operation' };
@@ -198,50 +180,37 @@ const makeApp = async (userFunc, reportFunc) => {
     }
     if (!userExist) {
       updtMesg = { message: 'User does not exist.' };
-      // res.status(updtSts).json(updtMesg);
     }
-    let isAdmin;
-    try {
-      await userFunc.chkAdmin(req.session.user);
-    } catch (err) {
-      console.error('Could not check if user is admin or not.', err);
-    }
-
-    if (isAdmin) {
-      // else if (await userFunc.chkAdmin(req.body.username)) {
-      isAdmin = await userFunc.chkAdmin(req.body.username);
+    if (req.session.utype === 'Admin') {
+      const isAdmin = await userFunc.chkAdmin(req.body.username);
       if (req.body.username !== req.session.user && !isAdmin) {
         try {
           [updtSts, updtMesg] = await userFunc.modUserByAdmin(
             req.body.username,
             req.body.password,
-            req.body.usertype,
-            req.body.userrole
+            req.body.user_type,
+            req.body.user_role
           );
         } catch (err) {
           console.error('Could not update user by admin.', err);
         }
       } else {
         updtMesg = { message: 'The change to other user is not allowed.' };
-      }
-      if (
-        req.body.username === req.session.user &&
-        req.session.utype.toLowerCase() === 'regular'
-      ) {
-        /*  } else if (
-      (await userFunc.getUserType(req.body.username)).toLowerCase() ===
-      'regular'
-      ) { */
-        try {
-          [updtSts, updtMesg] = await userFunc.modUserByRegular(
-            req.body.username,
-            req.body.password
-          );
-        } catch (err) {
-          console.error('Could not update user by regular user.', err);
+        if (
+          req.body.username === req.session.user &&
+          req.session.utype.toLowerCase() === 'regular'
+        ) {
+          try {
+            [updtSts, updtMesg] = await userFunc.modUserByRegular(
+              req.body.username,
+              req.body.password
+            );
+          } catch (err) {
+            console.error('Could not update user by regular user.', err);
+          }
+        } else {
+          updtMesg = { message: 'Could not perform operation' };
         }
-      } else {
-        updtMesg = { message: 'Could not perform operation' };
       }
       res.status(updtSts).json(updtMesg);
     }
@@ -258,8 +227,7 @@ const makeApp = async (userFunc, reportFunc) => {
     }
     if (!userExist) {
       delMesg = { message: 'User does not exist.' };
-    } else if (req.session.utype) {
-      // else if (await userFunc.chkAdmin(req.body.username)) {
+    } else if (req.session.utype === 'Admin') {
       try {
         [delSts, delMesg] = await userFunc.deleteUser(req.body.username);
       } catch (err) {
@@ -273,17 +241,11 @@ const makeApp = async (userFunc, reportFunc) => {
 
   app.get('/users/logout', async (req, res, next) => {
     req.session.username = null;
-    /* req.session.save((err) => { 
-      if (err) next(err);
-      req.session.regenerate(() => {
-        if (err) next(err);
-        res.clearCookie(process.env.SESSION_KEY);
-        // res.redirect('/');
-      }); 
-    }); */
+    req.session.utype = null;
+    req.session.validSession = false;
     const ssId = req.sessionID;
     req.session.destroy(ssId);
-    res.status(200).send({ message: 'Logged out successfully', ssId });
+    res.status(200).send({ message: 'Logged out successfully' });
     next();
   });
 
@@ -461,6 +423,11 @@ const makeApp = async (userFunc, reportFunc) => {
       }
     }
     res.status(genSts).json(genMesg);
+  });
+
+  app.get('/reports/download-report', (req, res) => {
+    const filePath = `./uploads/report_${req.query.type}_${req.query.date}_${req.query.sesn}.xlsx`;
+    res.sendFile(filePath);
   });
 
   app.use((err, req, res, next) => {

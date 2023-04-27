@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-const createUser = async (userData) => {
+const updateUser = async (userData) => {
   let res;
   const config = {
-    method: 'post',
-    url: 'http://localhost:8080/users/add-user',
+    method: 'put',
+    url: 'http://localhost:8080/users/modify-user',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -19,4 +19,4 @@ const createUser = async (userData) => {
   }
 };
 
-export default createUser;
+export default updateUser;

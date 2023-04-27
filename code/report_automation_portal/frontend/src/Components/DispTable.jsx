@@ -2,7 +2,7 @@
 import { useTable, usePagination } from 'react-table';
 import PropTypes from 'prop-types';
 
-export default function DispTable({ columns, data }) {
+export default function DispTable({ columns, data, cssClass }) {
   const {
     getTableProps,
     getTableBodyProps,
@@ -28,7 +28,7 @@ export default function DispTable({ columns, data }) {
   );
   return (
     <>
-      <table {...getTableProps()}>
+      <table className={cssClass} {...getTableProps()}>
         <thead>
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
@@ -115,6 +115,7 @@ export default function DispTable({ columns, data }) {
 DispTable.defaultProps = {
   columns: [],
   data: [],
+  cssClass: '',
 };
 
 DispTable.propTypes = {
@@ -130,4 +131,5 @@ DispTable.propTypes = {
   ),
   // eslint-disable-next-line react/forbid-prop-types
   data: PropTypes.arrayOf(PropTypes.object),
+  cssClass: PropTypes.string,
 };
