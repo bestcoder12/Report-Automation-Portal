@@ -252,6 +252,141 @@ const reportOps = async (db) => {
     return retVal;
   };
 
+  const storeOntTicket = async (reportFile, reportId) => {
+    const reportHeaders = reportArr['ont-ticket'].headers;
+    let retVal;
+    const actData = getJsonFromXLSX(reportFile.path, reportHeaders);
+    const storeOntTicketQuery =
+      'INSERT INTO ont_ticket VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+    await Promise.all(
+      actData.map(async (rowData) => {
+        let resOltNetQuery;
+        const gpCode = await getGPCode(rowData.Panchayat, rowData.BLOCK);
+        let resRowData;
+        if (gpCode !== undefined) {
+          let dateRowData;
+          const dateCols = Object.keys(rowData).filter((key) =>
+            /(date|time)+/gi.test(key)
+          );
+          await Promise.all(
+            dateCols.map(async (dateKey) => {
+              resRowData = rowData;
+              dateRowData = await convertDate(rowData[dateKey]);
+              resRowData[dateKey] = dateRowData;
+            })
+          );
+          try {
+            resOltNetQuery = await db.query(
+              storeOntTicketQuery,
+              [reportId, gpCode.gp_code].concat(Object.values(resRowData))
+            );
+          } catch (err) {
+            console.error('Could not add row to the database.', err);
+          }
+
+          if (resOltNetQuery.affectedRows !== [1]) {
+            retVal = [
+              500,
+              { message: 'The data could not be inserted into the database.' },
+            ];
+          }
+          retVal = [200, { message: 'The data was uploaded successfully.' }];
+        }
+      })
+    );
+    return retVal;
+  };
+
+  const storeUnkwnOnt = async (reportFile, reportId) => {
+    const reportHeaders = reportArr['unknown-ont'].headers;
+    let retVal;
+    const actData = getJsonFromXLSX(reportFile.path, reportHeaders);
+    const storeUnkwnOntQuery =
+      'INSERT INTO unknown_ont VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+    await Promise.all(
+      actData.map(async (rowData) => {
+        let resOltNetQuery;
+        const gpCode = await getGPCode(rowData['OLT LOCATION'], rowData.BLOCK);
+        let resRowData;
+        if (gpCode !== undefined) {
+          let dateRowData;
+          const dateCols = Object.keys(rowData).filter((key) =>
+            /(date|time)+/gi.test(key)
+          );
+          await Promise.all(
+            dateCols.map(async (dateKey) => {
+              resRowData = rowData;
+              dateRowData = await convertDate(rowData[dateKey]);
+              resRowData[dateKey] = dateRowData;
+            })
+          );
+          try {
+            resOltNetQuery = await db.query(
+              storeUnkwnOntQuery,
+              [reportId, gpCode.gp_code].concat(Object.values(resRowData))
+            );
+          } catch (err) {
+            console.error('Could not add row to the database.', err);
+          }
+
+          if (resOltNetQuery.affectedRows !== [1]) {
+            retVal = [
+              500,
+              { message: 'The data could not be inserted into the database.' },
+            ];
+          }
+          retVal = [200, { message: 'The data was uploaded successfully.' }];
+        }
+      })
+    );
+    return retVal;
+  };
+
+  const storeMismtchOnt = async (reportFile, reportId) => {
+    const reportHeaders = reportArr['mismatch-ont'].headers;
+    let retVal;
+    const actData = getJsonFromXLSX(reportFile.path, reportHeaders);
+    const storeMismtchOntQuery =
+      'INSERT INTO olt_ticket VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+    await Promise.all(
+      actData.map(async (rowData) => {
+        let resOltNetQuery;
+        const gpCode = await getGPCode(rowData['OLT LOCATION'], rowData.BLOCK);
+        let resRowData;
+        if (gpCode !== undefined) {
+          let dateRowData;
+          const dateCols = Object.keys(rowData).filter((key) =>
+            /(date|time)+/gi.test(key)
+          );
+          await Promise.all(
+            dateCols.map(async (dateKey) => {
+              resRowData = rowData;
+              dateRowData = await convertDate(rowData[dateKey]);
+              resRowData[dateKey] = dateRowData;
+            })
+          );
+          try {
+            resOltNetQuery = await db.query(
+              storeMismtchOntQuery,
+              [reportId, gpCode.gp_code].concat(Object.values(resRowData))
+            );
+          } catch (err) {
+            console.error('Could not add row to the database.', err);
+          }
+
+          if (resOltNetQuery.affectedRows !== [1]) {
+            retVal = [
+              500,
+              { message: 'The data could not be inserted into the database.' },
+            ];
+          }
+          retVal = [200, { message: 'The data was uploaded successfully.' }];
+        }
+      })
+    );
+    return retVal;
+  };
+
   const storeOltStatus = async (reportId, storeData) => {
     const storeOltStatusQuery = 'INSERT INTO olt_status VALUES (?,?,?,?,?,?);';
     let resStoreOltStatus;
@@ -434,6 +569,9 @@ const reportOps = async (db) => {
     storeReportToServer,
     storeOltMonthly,
     storeOltNet,
+    storeOntTicket,
+    storeUnkwnOnt,
+    storeMismtchOnt,
     fetchReport,
     genOltStatus,
   };
