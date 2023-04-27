@@ -224,6 +224,34 @@ const reportArr = {
       'percent_olt_up',
     ],
   },
+  'ont-status': {
+    headers: [
+      'DISTRICT',
+      'DOWN',
+      'OPERATIONAL',
+      'UNKWOWN PREV UP',
+      'GRAND TOTAL',
+      'PERCENTAGE OF ONT UP',
+    ],
+    columns: [
+      'report_id',
+      'district',
+      'down',
+      'operational',
+      'unknown_prev_up',
+      'total_ont_up',
+      'grand_total',
+      'percent_ont_up',
+    ],
+  },
+  'mark-for-del': {
+    headers: ['NE NAME', 'DISTRICT', 'COUNT OF PANCHAYAT'],
+    columns: ['report_id', 'ne_name', 'district', 'count_panchayat'],
+  },
+  'loc-config-pending': {
+    headers: ['NE NAME', 'DISTRICT', 'COUNT OF ONT LOCATION'],
+    columns: ['ne_name', 'district', 'count_ont_loc'],
+  },
 };
 
 export default reportArr;
