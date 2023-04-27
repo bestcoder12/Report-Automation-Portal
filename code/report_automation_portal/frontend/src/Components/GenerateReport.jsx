@@ -5,6 +5,7 @@ import 'react-calendar/dist/Calendar.css';
 import ResSideBar from './SideBar.jsx';
 import DropDownMenu from './DropDownMenu.jsx';
 import getReportData from './GetData.js';
+import getReportFile from './GetReportFile.js';
 import DispTable from './DispTable.jsx';
 import './LayoutReportStyle.css';
 
@@ -62,6 +63,24 @@ export default function GenerateReport() {
     setReportData(response.data.rows);
   };
 
+  const downloadExcelReport = async () => {
+    const genDate = `${value.getFullYear()}-${
+      value.getMonth() + 1
+    }-${value.getDate()}`;
+    const response = await getReportFile({
+      type: reportType,
+      date: genDate,
+      sessn: reportSession,
+    });
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'file.xlsx');
+    document.body.appendChild(link);
+    link.click();
+  };
+
   return (
     <div className="report-container">
       <div className="sidebar">
@@ -97,6 +116,13 @@ export default function GenerateReport() {
                 Generate Report
               </button>
             </form>
+            <button
+              type="button"
+              className="form-button"
+              onClick={downloadExcelReport}
+            >
+              Download report as Excel
+            </button>
           </div>
           <div className="report-child report-calendar">
             <div className="cal-label">Select date of report</div>

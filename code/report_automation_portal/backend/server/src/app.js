@@ -425,6 +425,11 @@ const makeApp = async (userFunc, reportFunc) => {
     res.status(genSts).json(genMesg);
   });
 
+  app.get('/reports/download-report', (req, res) => {
+    const filePath = `./uploads/report_${req.query.type}_${req.query.date}_${req.query.sesn}.xlsx`;
+    res.sendFile(filePath);
+  });
+
   app.use((err, req, res, next) => {
     console.log(err);
     res.status(500).send('Something broke');
