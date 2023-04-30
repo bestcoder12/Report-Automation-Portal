@@ -112,7 +112,7 @@ const reportOps = async (db) => {
   };
 
   const convertDate = async (dateStr) => {
-    if (!dateStr || dateStr === '--') return null;
+    if (!dateStr || dateStr === '--' || dateStr === 'NULL') return null;
     const dateParts = dateStr.split('-');
     const timeParts = dateParts[2].split(' ')[1].split(':');
     [dateParts[2]] = dateParts[2].split(' ');
@@ -132,19 +132,7 @@ const reportOps = async (db) => {
   };
 
   const storeOltMonthly = async (reportFile, reportId) => {
-    const reportHeaders = [
-      'STATE',
-      'DISTRICT',
-      'BLOCK',
-      'OLT LOCATION',
-      'OLT LOCATION CODE',
-      'OLT IP',
-      'OLT NAME',
-      'TOTAL DOWN TIME',
-      'TOTAL UNREACHABLE TIME',
-      'OLT AVAILABILITY(%)',
-      'PHASE',
-    ];
+    const reportHeaders = reportArr['olt-monthly'].headers;
     const actData = getJsonFromXLSX(reportFile.path, reportHeaders);
     const storeOltMonthlyQuery =
       'INSERT INTO olt_monthly VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
@@ -178,37 +166,7 @@ const reportOps = async (db) => {
   };
 
   const storeOltNet = async (reportFile, reportId) => {
-    const reportHeaders = [
-      'NETWORK PROVIDER',
-      'DISTRICT',
-      'BLOCK',
-      'OLT LOCATION',
-      'OLT LOCATION CODE',
-      'OLT NAME',
-      'OLT IP',
-      'EMS NAME',
-      'POINT ASSET CODE',
-      'VENDOR',
-      'TECH NAME',
-      'VERSION',
-      'OLT STATE',
-      'STATE CHANGE TIME',
-      'COMMISSION DATE',
-      'NMS CONFIG DATE',
-      'AT TIME',
-      'OLT ADDED TIME',
-      'HSTATUS',
-      'HSTATUS CHANGE TIME',
-      'STARTED USER',
-      'CONFIGURED PIC COUNT',
-      'CONFIGURED PON COUNT',
-      'CONFIGURED ONT COUNT',
-      'EMS CONNECTION TYPE',
-      'EMS VLAN ID',
-      'MARK FOR DELETE',
-      'REMARKS',
-      'OWNER',
-    ];
+    const reportHeaders = reportArr['olt-net-provider'].headers;
     let retVal;
     const actData = getJsonFromXLSX(reportFile.path, reportHeaders);
     const storeOltNetQuery =
@@ -252,6 +210,51 @@ const reportOps = async (db) => {
     return retVal;
   };
 
+  const storeOntNet = async (reportFile, reportId) => {
+    const reportHeaders = reportArr['ont-net-provider'].headers;
+    let retVal;
+    const actData = getJsonFromXLSX(reportFile.path, reportHeaders);
+    const storeOntNetQuery =
+      'INSERT INTO olt_net_provider VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+    await Promise.all(
+      actData.map(async (rowData) => {
+        let resOntNetQuery;
+        const gpCode = await getGPCode(rowData.panchayat, rowData.BLOCK);
+        let resRowData;
+        if (gpCode !== undefined) {
+          let dateRowData;
+          const dateCols = Object.keys(rowData).filter((key) =>
+            /(date|time)+/gi.test(key)
+          );
+          await Promise.all(
+            dateCols.map(async (dateKey) => {
+              resRowData = rowData;
+              dateRowData = await convertDate(rowData[dateKey]);
+              resRowData[dateKey] = dateRowData;
+            })
+          );
+          try {
+            resOntNetQuery = await db.query(
+              storeOntNetQuery,
+              [reportId, gpCode.gp_code].concat(Object.values(resRowData))
+            );
+          } catch (err) {
+            console.erron('Could not add row to the database.', err);
+          }
+
+          if (resOntNetQuery.affectedRows !== [1]) {
+            retVal = [
+              500,
+              { message: 'The data could not be inserted into the database.' },
+            ];
+          }
+          retVal = [200, { message: 'The data was uploaded successfully.' }];
+        }
+      })
+    );
+    return retVal;
+  };
+
   const storeOntTicket = async (reportFile, reportId) => {
     const reportHeaders = reportArr['ont-ticket'].headers;
     let retVal;
@@ -260,7 +263,7 @@ const reportOps = async (db) => {
       'INSERT INTO ont_ticket VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
     await Promise.all(
       actData.map(async (rowData) => {
-        let resOltNetQuery;
+        let resOntTicketQuery;
         const gpCode = await getGPCode(rowData.Panchayat, rowData.BLOCK);
         let resRowData;
         if (gpCode !== undefined) {
@@ -276,7 +279,7 @@ const reportOps = async (db) => {
             })
           );
           try {
-            resOltNetQuery = await db.query(
+            resOntTicketQuery = await db.query(
               storeOntTicketQuery,
               [reportId, gpCode.gp_code].concat(Object.values(resRowData))
             );
@@ -284,7 +287,7 @@ const reportOps = async (db) => {
             console.error('Could not add row to the database.', err);
           }
 
-          if (resOltNetQuery.affectedRows !== [1]) {
+          if (resOntTicketQuery.affectedRows !== [1]) {
             retVal = [
               500,
               { message: 'The data could not be inserted into the database.' },
@@ -894,6 +897,7 @@ const reportOps = async (db) => {
     storeReportToServer,
     storeOltMonthly,
     storeOltNet,
+    storeOntNet,
     storeOntTicket,
     storeUnkwnOnt,
     storeMismtchOnt,

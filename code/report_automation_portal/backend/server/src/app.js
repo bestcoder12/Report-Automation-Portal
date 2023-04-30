@@ -183,7 +183,10 @@ const makeApp = async (userFunc, reportFunc) => {
     }
     if (req.session.utype === 'Admin') {
       const isAdmin = await userFunc.chkAdmin(req.body.username);
-      if (req.body.username !== req.session.user && !isAdmin) {
+      if (
+        req.body.username === req.session.user ||
+        (req.body.username !== req.session.user && !isAdmin)
+      ) {
         try {
           [updtSts, updtMesg] = await userFunc.modUserByAdmin(
             req.body.username,
@@ -196,24 +199,24 @@ const makeApp = async (userFunc, reportFunc) => {
         }
       } else {
         updtMesg = { message: 'The change to other user is not allowed.' };
-        if (
-          req.body.username === req.session.user &&
-          req.session.utype.toLowerCase() === 'regular'
-        ) {
-          try {
-            [updtSts, updtMesg] = await userFunc.modUserByRegular(
-              req.body.username,
-              req.body.password
-            );
-          } catch (err) {
-            console.error('Could not update user by regular user.', err);
-          }
-        } else {
-          updtMesg = { message: 'Could not perform operation' };
-        }
       }
-      res.status(updtSts).json(updtMesg);
     }
+    if (
+      req.body.username === req.session.user &&
+      req.session.utype.toLowerCase() === 'regular'
+    ) {
+      try {
+        [updtSts, updtMesg] = await userFunc.modUserByRegular(
+          req.body.username,
+          req.body.password
+        );
+      } catch (err) {
+        console.error('Could not update user by regular user.', err);
+      }
+    } else {
+      updtMesg = { message: 'Could not perform operation' };
+    }
+    res.status(updtSts).json(updtMesg);
   });
 
   app.delete('/users/delete-user', async (req, res) => {

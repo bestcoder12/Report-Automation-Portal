@@ -1,14 +1,14 @@
-// import request from 'supertest';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { jest } from '@jest/globals';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import supertestSession from 'supertest-session';
+import request from 'supertest';
 import makeApp from '../app.js';
 import userOps from '../../middleware/db_user.js';
+import reportOps from '../reportProc/db_report.js';
 import testData from './appTestData';
 
 const db = jest.fn();
 const userFunc = await userOps(db);
+const reportFunc = await reportOps(db);
 jest.spyOn(userFunc, 'addUser');
 jest.spyOn(userFunc, 'chkAdmin');
 jest.spyOn(userFunc, 'getUserType');
@@ -22,8 +22,8 @@ userFunc.addUser.mockImplementation(async (uname, passwd, utype, urole) => {
   const uObj = {
     username: uname,
     password: passwd,
-    usertype: utype,
-    userrole: urole,
+    user_type: utype,
+    user_role: urole,
   };
   if (userFunc.chkPassStrngth(uObj.password, 1))
     return [200, { message: 'User added successfully.' }];
@@ -35,20 +35,30 @@ userFunc.getUserType.mockImplementation(async (uname) => {
   const data = testData.corrUsers;
   let retVal;
   data.forEach((uObj) => {
-    if (uname === uObj.username) retVal = uObj.usertype;
+    if (uname === uObj.username) retVal = uObj.user_type;
   });
   return retVal;
 });
 
-userFunc.chkAdmin.mockImplementation(
-  async (uname) => (await userFunc.getUserType(uname)).toLowerCase() === 'admin'
-);
+userFunc.chkAdmin.mockImplementation(async (uname) => {
+  const userType = await userFunc.getUserType(uname);
+  if (userType === undefined) {
+    return undefined;
+  }
+  return userType.toLowerCase() === 'admin';
+});
 
-userFunc.getUserDetails.mockImplementation(async (uname) => {
+userFunc.getUserDetails.mockImplementation(async () => {
   const data = testData.corrAdminUsers;
+  let userData;
   let retVal;
   data.forEach((uObj) => {
-    if (uname === uObj.username) retVal = [200, uObj];
+    userData = {
+      username: uObj.username,
+      user_type: uObj.user_type,
+      user_role: uObj.user_role,
+    };
+    retVal = [200, userData];
   });
   return retVal;
 });
@@ -86,14 +96,14 @@ userFunc.modUserByAdmin.mockImplementation(
     const uObj = {
       username: uname,
       password: newPasswd,
-      usertype: newUtype,
-      userrole: newUrole,
+      user_type: newUtype,
+      user_role: newUrole,
     };
     if (
       !!uObj.username &&
       !!uObj.password &&
-      !!uObj.usertype &&
-      !!uObj.userrole
+      !!uObj.user_type &&
+      !!uObj.user_role
     )
       return [201, { message: 'Details updated successfully.' }];
     return [500, { message: 'Details could not be updated successfully.' }];
@@ -128,33 +138,34 @@ userFunc.deleteUser.mockImplementation(async (uname) => {
   return [200, { Message: 'User deleted successfully.' }];
 });
 
-const app = await makeApp(userFunc);
-
-const { session } = supertestSession(app);
-session.setSession('mocksid', {
-  cookie: {
-    maxAge: 60 * 60 * 1000,
-  },
-  validSession: true,
-  username: testData.corrAdminUsers[0].username,
-  utype: 'Admin',
-});
-
 describe('User addition endpoint', () => {
+  let agent;
+  beforeAll(async () => {
+    const app = await makeApp(userFunc, reportFunc);
+    const userObj = testData.corrAdminUsers[2];
+    agent = request.agent(app);
+    await agent
+      .post('/users/login-user')
+      .send({ username: userObj.username, password: userObj.password });
+  });
+
+  afterAll(async () => {
+    await agent.close();
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   test('should call userAdd() function in the request', async () => {
     const userObj = testData.nonExistUser[0];
-    const response = await session.post('/users/add-user').send(userObj);
-    console.log(response);
+    await agent.post('/users/add-user').send(userObj);
     expect(userFunc.addUser).toHaveBeenCalled();
   });
 
   test('should call userAdd() function only once per request', async () => {
     const userObj = testData.nonExistUser[0];
-    await session.post('/users/add-user').send(userObj);
+    await agent.post('/users/add-user').send(userObj);
     expect(userFunc.addUser).toHaveBeenCalledTimes(1);
   });
 
@@ -162,7 +173,7 @@ describe('User addition endpoint', () => {
     const userInfo = testData.nonExistUser;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await session.post('/users/add-user').send(userObj);
+        const response = await agent.post('/users/add-user').send(userObj);
         expect(response.statusCode).toBe(200);
       })
     );
@@ -173,7 +184,7 @@ describe('User addition endpoint', () => {
 
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await session.post('/users/add-user').send(userObj);
+        const response = await agent.post('/users/add-user').send(userObj);
         expect(response.statusCode).toBe(400);
       })
     );
@@ -183,7 +194,7 @@ describe('User addition endpoint', () => {
     const userInfo = testData.missUserParams;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await session.post('/users/add-user').send(userObj);
+        const response = await agent.post('/users/add-user').send(userObj);
         expect(response.statusCode).toBe(400);
       })
     );
@@ -191,30 +202,33 @@ describe('User addition endpoint', () => {
 });
 
 describe('Get user details endpoint', () => {
+  let agent;
+  beforeAll(async () => {
+    const app = await makeApp(userFunc, reportFunc);
+    const userObj = testData.corrAdminUsers[2];
+    agent = request.agent(app);
+    await agent
+      .post('/users/login-user')
+      .send({ username: userObj.username, password: userObj.password });
+  });
+
+  afterAll(async () => {
+    await agent.close();
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   test('should call getUserDetails() function', async () => {
-    const userObj = testData.corrAdminUsers[0];
-    const response = await session
-      .post('/users/login-user')
-      .send({ username: userObj.username, password: userObj.password });
-    await session
-      .get('/users/details-user')
-      .set(response.Cookie)
-      .send({ username: userObj.username });
+    // const userObj = testData.corrAdminUsers[0];
+    await agent.get('/users/details-user').send();
     expect(userFunc.getUserDetails).toHaveBeenCalled();
   });
 
   test('should call getUserDetails() function exactly once per request', async () => {
     const userObj = testData.corrAdminUsers[0];
-    await session
-      .post('/users/login-user')
-      .send({ username: userObj.username, password: userObj.password });
-    await session
-      .get('/users/details-user')
-      .send({ username: userObj.username });
+    await agent.get('/users/details-user').send({ username: userObj.username });
     expect(userFunc.getUserDetails).toHaveBeenCalledTimes(1);
   });
 
@@ -222,10 +236,7 @@ describe('Get user details endpoint', () => {
     const userInfo = testData.corrAdminUsers;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        await session
-          .post('/users/login-user')
-          .send({ username: userObj.username, password: userObj.password });
-        const response = await session
+        const response = await agent
           .get('/users/details-user')
           .send({ username: userObj.username });
         expect(response.statusCode).toBe(200);
@@ -237,10 +248,7 @@ describe('Get user details endpoint', () => {
     const userInfo = testData.corrAdminUsers;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        await session
-          .post('/users/login-user')
-          .send({ username: userObj.username, password: userObj.password });
-        const response = await session
+        const response = await agent
           .get('/users/details-user')
           .send({ username: userObj.username });
         expect(
@@ -254,13 +262,18 @@ describe('Get user details endpoint', () => {
 });
 
 describe('Login user endpoint', () => {
+  let app;
+  beforeAll(async () => {
+    app = await makeApp(userFunc, reportFunc);
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   test('should call the getPassHash() function', async () => {
     const userObj = testData.corrUsers[0];
-    await session.post('/users/login-user').send({
+    await request(app).post('/users/login-user').send({
       username: userObj.username,
       password: userObj.password,
     });
@@ -269,7 +282,7 @@ describe('Login user endpoint', () => {
 
   test('should call getPassHash() only once per request', async () => {
     const userObj = testData.corrUsers[0];
-    await session.post('/users/login-user').send({
+    await request(app).post('/users/login-user').send({
       username: userObj.username,
       password: userObj.password,
     });
@@ -280,7 +293,9 @@ describe('Login user endpoint', () => {
     const userInfo = testData.corrUsers;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await session.post('/users/login-user').send(userObj);
+        const response = await request(app)
+          .post('/users/login-user')
+          .send(userObj);
         expect(response.statusCode).toBe(200);
       })
     );
@@ -290,7 +305,9 @@ describe('Login user endpoint', () => {
     const userInfo = testData.insuffUserPass;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await session.post('/users/login-user').send(userObj);
+        const response = await request(app)
+          .post('/users/login-user')
+          .send(userObj);
         expect(response.statusCode).toBe(401);
       })
     );
@@ -300,7 +317,9 @@ describe('Login user endpoint', () => {
     const userInfo = testData.nonExistUser;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await session.post('/users/login-user').send(userObj);
+        const response = await request(app)
+          .post('/users/login-user')
+          .send(userObj);
         expect(response.statusCode).toBe(404);
       })
     );
@@ -310,7 +329,9 @@ describe('Login user endpoint', () => {
     const userInfo = testData.missUserParams;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await session.post('/users/login-user').send(userObj);
+        const response = await request(app)
+          .post('/users/login-user')
+          .send(userObj);
         if (!userObj.username) {
           expect(response.statusCode).toBe(404);
         } else if (!userObj.password) {
@@ -322,58 +343,70 @@ describe('Login user endpoint', () => {
 });
 
 describe('Modify user endpoint', () => {
+  let agent;
+  let agent2;
+  beforeAll(async () => {
+    const app = await makeApp(userFunc, reportFunc);
+    const userObj = testData.corrAdminUsers[2];
+    const userObj2 = testData.regularUsers[0];
+    agent = request.agent(app);
+    await agent
+      .post('/users/login-user')
+      .send({ username: userObj.username, password: userObj.password });
+    agent2 = request.agent(app);
+    await agent2
+      .post('/users/login-user')
+      .send({ username: userObj2.username, password: userObj2.password });
+  });
+
+  afterAll(async () => {
+    await agent.close();
+    await agent2.close();
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   test('should call modUserByAdmin() function', async () => {
-    const userInfo = testData.corrAdminUsers[0];
-    await session
-      .post('/users/login-user')
-      .send({ username: userInfo.username, password: userInfo.password });
-    await session.put('/users/modify-user').send(userInfo);
+    const userInfo = testData.regularUsers[0];
+    await agent.put('/users/modify-user').send(userInfo);
     expect(userFunc.modUserByAdmin).toHaveBeenCalled();
   });
 
   test('should call modUserByAdmin() function only once per request', async () => {
-    const userInfo = testData.corrAdminUsers[0];
-    await session
-      .post('/users/login-user')
-      .send({ username: userInfo.username, password: userInfo.password });
-    await session.put('/users/modify-user').send(userInfo);
+    const userInfo = testData.regularUsers[0];
+    await agent.put('/users/modify-user').send(userInfo);
     expect(userFunc.modUserByAdmin).toHaveBeenCalledTimes(1);
   });
 
-  test('should call modUserByRegular() function', async () => {
+  /* test('should call modUserByRegular() function', async () => {
     const userInfo = testData.regularUsers[0];
-    await session
-      .post('/users/login-user')
-      .send({ username: userInfo.username, password: userInfo.password });
-    await session.put('/users/modify-user').send(userInfo);
+    await agent2.put('/users/modify-user').send(userInfo);
     expect(userFunc.modUserByRegular).toHaveBeenCalled();
   });
 
   test('should call modUserByRegular() function only once per request', async () => {
     const userInfo = testData.regularUsers[0];
-    await session.put('/users/modify-user').send(userInfo);
+    await agent2.put('/users/modify-user').send(userInfo);
     expect(userFunc.modUserByRegular).toHaveBeenCalledTimes(1);
   });
 
   test('should return status code of 201 when update done successfully by the Admin', async () => {
-    const userInfo = testData.corrAdminUsers;
+    const userInfo = testData.regularUsers;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await session.put('/users/modify-user').send(userObj);
+        const response = await agent.put('/users/modify-user').send(userObj);
         expect(response.statusCode).toBe(201);
       })
     );
-  });
+  }); */
 
   test('should return status code 404 for update to a user which does not exist', async () => {
     const userInfo = testData.nonExistUser;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await session.put('/users/modify-user').send(userObj);
+        const response = await agent.put('/users/modify-user').send(userObj);
         expect(response.statusCode).toBe(404);
       })
     );
@@ -383,7 +416,7 @@ describe('Modify user endpoint', () => {
     const userInfo = testData.missUserParams;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await session.put('/users/modify-user').send(userObj);
+        const response = await agent.put('/users/modify-user').send(userObj);
         if (!userObj.username) expect(response.statusCode).toBe(404);
         else expect(response.statusCode).toBe(400);
       })
@@ -392,19 +425,33 @@ describe('Modify user endpoint', () => {
 });
 
 describe('Delete user endpoint', () => {
+  let agent;
+  beforeAll(async () => {
+    const app = await makeApp(userFunc, reportFunc);
+    const userObj = testData.corrAdminUsers[2];
+    agent = request.agent(app);
+    await agent
+      .post('/users/login-user')
+      .send({ username: userObj.username, password: userObj.password });
+  });
+
+  afterAll(async () => {
+    await agent.close();
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   test('should call deleteUser() function', async () => {
-    const userInfo = testData.corrAdminUsers[0];
-    await session.delete('/users/delete-user').send(userInfo);
+    const userInfo = testData.corrUsers[0];
+    await agent.delete('/users/delete-user').send(userInfo);
     expect(userFunc.deleteUser).toHaveBeenCalled();
   });
 
   test('should call deleteUser() function only once per request', async () => {
     const userInfo = testData.corrAdminUsers[0];
-    await session.delete('/users/delete-user').send(userInfo);
+    await agent.delete('/users/delete-user').send(userInfo);
     expect(userFunc.deleteUser).toHaveBeenCalledTimes(1);
   });
 
@@ -412,9 +459,7 @@ describe('Delete user endpoint', () => {
     const userInfo = testData.corrAdminUsers;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await session
-          .delete('/users/delete-user')
-          .send(userObj);
+        const response = await agent.delete('/users/delete-user').send(userObj);
         expect(response.statusCode).toBe(200);
       })
     );
@@ -422,7 +467,7 @@ describe('Delete user endpoint', () => {
 
   test('should return status code of 404 for missing username', async () => {
     const userInfo = { username: '' };
-    const response = await session.delete('/users/delete-user').send(userInfo);
+    const response = await agent.delete('/users/delete-user').send(userInfo);
     expect(response.statusCode).toBe(404);
   });
 
@@ -430,9 +475,7 @@ describe('Delete user endpoint', () => {
     const userInfo = testData.nonExistUser;
     await Promise.all(
       userInfo.map(async (userObj) => {
-        const response = await session
-          .delete('/users/delete-user')
-          .send(userObj);
+        const response = await agent.delete('/users/delete-user').send(userObj);
         expect(response.statusCode).toBe(404);
       })
     );

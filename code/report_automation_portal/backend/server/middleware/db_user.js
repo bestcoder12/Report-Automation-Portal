@@ -80,8 +80,13 @@ const userOps = async (db) => {
     return userExist !== 0;
   };
 
-  const chkAdmin = async (userName) =>
-    (await getUserType(userName)).toLowerCase() === 'admin';
+  const chkAdmin = async (userName) => {
+    const userType = await getUserType(userName);
+    if (userType === undefined) {
+      return undefined;
+    }
+    return userType.toLowerCase() === 'admin';
+  };
 
   const addUser = async (userName, userPassword, userType, userRole) => {
     const addUserQuery = 'INSERT INTO user VALUES (?, ?, ?, ?);';
