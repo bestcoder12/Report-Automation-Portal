@@ -73,7 +73,7 @@ const missUserParams = [
   },
   {
     username: 'test5',
-    password: '',
+    password: undefined,
     user_type: 'Admin',
     user_role: 'Employee',
   },

@@ -180,6 +180,8 @@ const makeApp = async (userFunc, reportFunc) => {
     }
     if (!userExist) {
       updtMesg = { message: 'User does not exist.' };
+      res.status(updtSts).json(updtMesg);
+      return;
     }
     if (req.session.utype === 'Admin') {
       const isAdmin = await userFunc.chkAdmin(req.body.username);
@@ -198,10 +200,10 @@ const makeApp = async (userFunc, reportFunc) => {
           console.error('Could not update user by admin.', err);
         }
       } else {
+        updtSts = 400;
         updtMesg = { message: 'The change to other user is not allowed.' };
       }
-    }
-    if (
+    } else if (
       req.body.username === req.session.user &&
       req.session.utype.toLowerCase() === 'regular'
     ) {
@@ -214,6 +216,7 @@ const makeApp = async (userFunc, reportFunc) => {
         console.error('Could not update user by regular user.', err);
       }
     } else {
+      updtSts = 400;
       updtMesg = { message: 'Could not perform operation' };
     }
     res.status(updtSts).json(updtMesg);
