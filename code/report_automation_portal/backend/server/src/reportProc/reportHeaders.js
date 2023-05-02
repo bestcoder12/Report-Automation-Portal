@@ -399,6 +399,7 @@ const reportArr = {
       'DOWN',
       'OPERATIONAL',
       'UNKWOWN PREV UP',
+      'TOTAL ONT UP',
       'GRAND TOTAL',
       'PERCENTAGE OF ONT UP',
     ],

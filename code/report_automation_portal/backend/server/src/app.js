@@ -461,7 +461,6 @@ const makeApp = async (userFunc, reportFunc) => {
       '../uploads/',
       `report_${req.query.type}_${req.query.date}_${req.query.sessn}.xlsx`
     );
-    console.log(filePath);
     res.sendFile(filePath);
   });
 
