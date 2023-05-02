@@ -45,9 +45,9 @@ export default function GenerateReport() {
   const getReport = async (e) => {
     e.preventDefault();
 
-    const genDate = `${value.getFullYear()}-${
-      value.getMonth() + 1
-    }-${value.getDate()}`;
+    const genDate = `${value.getFullYear()}-${(value.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}-${value.getDate().toString().padStart(2, '0')}`;
     const genData = {
       type: reportType,
       date: genDate,
@@ -72,9 +72,9 @@ export default function GenerateReport() {
   };
 
   const downloadExcelReport = async () => {
-    const genDate = `${value.getFullYear()}-${
-      value.getMonth() + 1
-    }-${value.getDate()}`;
+    const genDate = `${value.getFullYear()}-${(value.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}-${value.getDate().toString().padStart(2, '0')}`;
     const response = await getReportFile({
       type: reportType,
       date: genDate,

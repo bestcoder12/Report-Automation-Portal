@@ -3,7 +3,13 @@ import PropTypes from 'prop-types';
 import updateUser from './UpdateUser.js';
 import DropDownMenu from './DropDownMenu.jsx';
 
-export default function EditForm({ user, onSave, onCancel }) {
+export default function EditForm({
+  user,
+  onSave,
+  onCancel,
+  onSuccess,
+  forResponse,
+}) {
   const [username, setUsername] = useState(user ? user.username : '');
   const [passwrd, setPasswrd] = useState('');
   const [userType, setUserType] = useState(user ? user.user_type : '');
@@ -54,10 +60,13 @@ export default function EditForm({ user, onSave, onCancel }) {
     };
     const response = await updateUser(editUser);
     if (response.statusCode !== 201) {
-      return <div>response.data.message</div>;
+      onSuccess(false);
+      forResponse(response.data.message);
+    } else {
+      onSave(editUser);
+      onSuccess(true);
+      forResponse(response.data.message);
     }
-    onSave(editUser);
-    return response.statusCode;
   };
 
   const handleCancel = () => {
@@ -82,6 +91,7 @@ export default function EditForm({ user, onSave, onCancel }) {
         type="text"
         name="password"
         id="password"
+        placeholder="Enter a new password..."
         onChange={handlePasswrd}
       />
       <DropDownMenu
@@ -118,6 +128,8 @@ EditForm.defaultProps = {
   },
   onSave: () => {},
   onCancel: () => {},
+  onSuccess: () => {},
+  forResponse: () => {},
 };
 
 EditForm.propTypes = {
@@ -128,4 +140,6 @@ EditForm.propTypes = {
   }),
   onSave: PropTypes.func,
   onCancel: PropTypes.func,
+  onSuccess: PropTypes.func,
+  forResponse: PropTypes.func,
 };

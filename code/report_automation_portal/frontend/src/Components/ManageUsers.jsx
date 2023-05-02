@@ -95,11 +95,12 @@ export default function ManageUsers() {
     if (response.statusCode !== 200) {
       setIsSuccess(false);
       setResponseMesg(response.data.message);
+    } else {
+      setIsSuccess(true);
+      setResponseMesg(response.data.message);
+      handleDelete(delUser);
+      closeConfirmation();
     }
-    handleDelete(delUser);
-    closeConfirmation();
-    setIsSuccess(true);
-    setResponseMesg(response.data.message);
   };
 
   const renderActionCells = useCallback(
@@ -186,6 +187,8 @@ export default function ManageUsers() {
               user={editData}
               onSave={handleEditSave}
               onCancel={handleOnCancel}
+              onSuccess={setIsSuccess}
+              forResponse={setResponseMesg}
             />
           )}
         </div>

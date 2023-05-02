@@ -6,8 +6,7 @@ import DropDownMenu from './DropDownMenu.jsx';
 export default function AddUserForm({ onSave, onSuccess, forResponse }) {
   const [userName, setUserName] = useState();
   const [passwrd, setPasswrd] = useState();
-  const [newUser, setNewUser] = useState();
-
+  const [showPassword, setShowPassword] = useState(false);
   const userTypeOpts = [
     { label: 'Regular User', value: 'Regular' },
     { label: 'Uploading User', value: 'Uploading' },
@@ -23,23 +22,55 @@ export default function AddUserForm({ onSave, onSuccess, forResponse }) {
     { label: 'NE', value: 'NE' },
   ];
   const [userRole, setUserRole] = useState(userRoleOpts[0].value);
+  const [newUser, setNewUser] = useState({
+    username: userName,
+    password: passwrd,
+    user_type: userType,
+    user_role: userRole,
+  });
 
   const handleUserType = (e) => {
     setUserType(e.target.value);
+    setNewUser((prevState) => ({
+      ...prevState,
+      user_type: e.target.value,
+    }));
+    onSuccess(false);
+    forResponse('');
   };
 
   const handleUserRole = (e) => {
     setUserRole(e.target.value);
+    setNewUser((prevState) => ({
+      ...prevState,
+      user_role: e.target.value,
+    }));
+    onSuccess(false);
+    forResponse('');
   };
 
   const handleUsername = (e) => {
-    e.preventDefault();
     setUserName(e.target.value);
+    setNewUser((prevState) => ({
+      ...prevState,
+      username: e.target.value,
+    }));
+    onSuccess(false);
+    forResponse('');
   };
 
   const handlePasswrd = (e) => {
-    e.preventDefault();
     setPasswrd(e.target.value);
+    setNewUser((prevState) => ({
+      ...prevState,
+      password: e.target.value,
+    }));
+    onSuccess(false);
+    forResponse('');
+  };
+
+  const togglePassword = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleCreateUser = async (e) => {
@@ -78,7 +109,7 @@ export default function AddUserForm({ onSave, onSuccess, forResponse }) {
         onChange={handleUsername}
       />
       <input
-        type="password"
+        type={showPassword ? 'text' : 'password'}
         name="password"
         id="password"
         placeholder="Enter a pasword..."
@@ -100,6 +131,10 @@ export default function AddUserForm({ onSave, onSuccess, forResponse }) {
         value={userRole}
         onChange={handleUserRole}
       />
+      <div className="login-chk">
+        <input type="checkbox" onClick={togglePassword} />
+        Show Password
+      </div>
       <button type="submit">Create user</button>
     </form>
   );

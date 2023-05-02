@@ -47,9 +47,9 @@ export default function AddReport() {
 
   const uploadFile = async (e) => {
     e.preventDefault();
-    const upldDate = `${value.getFullYear()}-${
-      value.getMonth() + 1
-    }-${value.getDate()}`;
+    const upldDate = `${value.getFullYear()}-${(value.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}-${value.getDate().toString().padStart(2, '0')}`;
     const formData = new FormData();
     formData.append('date', upldDate);
     formData.append('type', reportType);

@@ -93,8 +93,6 @@ export default function ChangePassword() {
     setResponseMesg(response.data.message);
   };
 
-  console.log(newPasswrd, cnfrmNewPass, passMatch);
-
   return (
     <div className="user-container">
       <div className="sidebar">
