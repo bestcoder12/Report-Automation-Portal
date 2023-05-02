@@ -38,7 +38,9 @@ export default function Login() {
       <div className="container">
         <div className="wrong-message">
           {failLogin ? (
-            <p>Wrong username or password. Please check your credentials.</p>
+            <p className="error">
+              Wrong username or password. Please check your credentials.
+            </p>
           ) : (
             <div />
           )}

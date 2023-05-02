@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import ResSideBar from './SideBar.jsx';
@@ -13,6 +13,11 @@ export default function GenerateReport() {
   const [value, onChange] = useState(new Date());
   const [reportCols, setReportCols] = useState();
   const [reportData, setReportData] = useState();
+  const [responseMesg, setResponseMesg] = useState();
+
+  useEffect(() => {
+    setResponseMesg('');
+  }, []);
 
   const columns = useMemo(() => reportCols, [reportCols]);
   const data = useMemo(() => reportData, [reportData]);
@@ -49,6 +54,9 @@ export default function GenerateReport() {
       sessn: reportSession,
     };
     const response = await getReportData(genData);
+    if (response.statusCode !== 200) {
+      setResponseMesg(response.data.message);
+    }
     // setReportData(response.data);
     let colObj;
     const colArr = [];
@@ -88,6 +96,7 @@ export default function GenerateReport() {
       </div>
       <div className="page-container">
         <h1 className="heading">Generate Report</h1>
+        {responseMesg && <p className="error">{responseMesg}</p>}
         <div className="report-form" style={{ maxHeight: '450px' }}>
           <div className="report-child">
             <form

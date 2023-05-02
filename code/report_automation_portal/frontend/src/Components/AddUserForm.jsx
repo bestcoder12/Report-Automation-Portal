@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import createUser from './CreateUser.js';
 import DropDownMenu from './DropDownMenu.jsx';
 
-export default function AddUserForm({ onSave }) {
+export default function AddUserForm({ onSave, onSuccess, forResponse }) {
   const [userName, setUserName] = useState();
   const [passwrd, setPasswrd] = useState();
   const [newUser, setNewUser] = useState();
@@ -54,7 +54,12 @@ export default function AddUserForm({ onSave }) {
     if (response.statusCode === 200) {
       const newUserData = { ...newUser };
       delete newUserData.password;
+      onSuccess(true);
+      forResponse(response.data.message);
       onSave(newUserData);
+    } else {
+      onSuccess(false);
+      forResponse(response.data.message);
     }
   };
 
@@ -102,8 +107,12 @@ export default function AddUserForm({ onSave }) {
 
 AddUserForm.defaultProps = {
   onSave: () => {},
+  onSuccess: () => {},
+  forResponse: () => {},
 };
 
 AddUserForm.propTypes = {
   onSave: PropTypes.func,
+  onSuccess: PropTypes.func,
+  forResponse: PropTypes.func,
 };

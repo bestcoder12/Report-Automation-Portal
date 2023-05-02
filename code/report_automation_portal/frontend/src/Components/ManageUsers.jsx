@@ -15,6 +15,13 @@ export default function ManageUsers() {
   const [editData, setEditData] = useState();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [delUser, setDelUser] = useState();
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [responseMesg, setResponseMesg] = useState();
+
+  useEffect(() => {
+    setIsSuccess(false);
+    setResponseMesg('');
+  }, []);
 
   const handleEdit = useCallback((original) => {
     setEditData(original);
@@ -86,11 +93,13 @@ export default function ManageUsers() {
   const deleteUser = async () => {
     const response = await removeUser(delUser);
     if (response.statusCode !== 200) {
-      return <div>Could not delete user</div>;
+      setIsSuccess(false);
+      setResponseMesg(response.data.message);
     }
     handleDelete(delUser);
     closeConfirmation();
-    return response.statusCode;
+    setIsSuccess(true);
+    setResponseMesg(response.data.message);
   };
 
   const renderActionCells = useCallback(
@@ -136,6 +145,9 @@ export default function ManageUsers() {
       </div>
       <div className="page-container">
         <h1 className="heading">Manage Users</h1>
+        {responseMesg && (
+          <p className={isSuccess ? 'success' : 'error'}>{responseMesg}</p>
+        )}
         <div className="report-table-container">
           <DispTable columns={columns} data={data} cssClass="table" />
         </div>
@@ -157,7 +169,13 @@ export default function ManageUsers() {
           </div>
         )}
         <div className="add-button">
-          {toggleUserForm && <AddUserForm onSave={handleAddSave} />}
+          {toggleUserForm && (
+            <AddUserForm
+              onSave={handleAddSave}
+              onSuccess={setIsSuccess}
+              forResponse={setResponseMesg}
+            />
+          )}
           <input
             type="button"
             value="Add User"

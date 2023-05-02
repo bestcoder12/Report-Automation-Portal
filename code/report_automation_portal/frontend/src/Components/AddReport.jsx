@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import sendFile from './SendFile.js';
@@ -9,6 +9,13 @@ import './LayoutReportStyle.css';
 export default function AddReport() {
   const [value, onChange] = useState(new Date());
   const [file, setFile] = useState();
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [responseMesg, setResponseMesg] = useState();
+
+  useEffect(() => {
+    setIsSuccess(false);
+    setResponseMesg('');
+  }, []);
 
   const reportOptions = [
     { label: 'OLT Monthly', value: 'olt-monthly' },
@@ -49,7 +56,13 @@ export default function AddReport() {
     formData.append('sessn', reportSession);
     formData.append('xlsx', file);
     const response = await sendFile(formData);
-    console.log(response);
+    if (response.statusCode === 200) {
+      setIsSuccess(true);
+      setResponseMesg(response.data.message);
+    } else {
+      setIsSuccess(false);
+      setResponseMesg(response.data.message);
+    }
   };
 
   return (
@@ -59,6 +72,9 @@ export default function AddReport() {
       </div>
       <div className="page-container">
         <h1 className="heading">Add Report</h1>
+        {responseMesg && (
+          <p className={isSuccess ? 'success' : 'error'}>{responseMesg}</p>
+        )}
         <div className="report-form">
           <div className="report-child">
             <form

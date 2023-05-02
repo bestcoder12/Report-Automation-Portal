@@ -662,14 +662,116 @@ const reportOps = async (db) => {
   };
 
   const genOntStatus = async (reportId) => {
-    const genOntStatusQuery = ``;
+    const genOntStatusQuery = `WITH down_ont AS 
+    (
+      SELECT  
+        report_id, 
+        district, 
+        SUM(IF(ont_state LIKE '%DOWN', 1, 0)) AS DOWN 
+      FROM ont_net_provider
+      GROUP BY report_id, district
+      HAVING report_id = ?
+    ), oprtnl_ont AS
+    (
+      SELECT
+       report_id,
+       district,
+       SUM(IF(ont_state LIKE '%UP', 1, 0)) AS OPERATIONAL
+      FROM ont_net_provider
+      GROUP BY report_id, district
+      HAVING report_id = ?
+    ), unknown_prev_up AS
+    (
+      SELECT 
+        today.report_id,
+        today.district,
+        SUM(IF(((yesterday.ont_state LIKE '%UNKNOWN') AND (today.ont_state LIKE '%UP')), 1, 0)) AS UNKWN_UP
+      FROM ont_net_provider AS today
+      JOIN ont_net_provider AS yesterday ON today.district = yesterday.district
+      WHERE yesterday.report_id = ?
+        AND today.report_id = ?
+      GROUP BY today.report_id, today.district
+    ), comb_down_up_unkwn AS
+    (
+       SELECT 
+          down_ont.report_id,
+          down_ont.district, 
+          down_ont.down, 
+          oprtnl_ont.operational,
+          IFNULL(unknown_prev_up.unkwn_up,0) AS UNKNOWN_UP
+        FROM down_ont
+        JOIN oprtnl_ont
+        ON down_ont.district = oprtnl_ont.district
+          AND down_ont.report_id = oprtnl_ont.report_id
+        LEFT JOIN unknown_prev_up
+        ON (down_ont.district = unknown_prev_up.district
+          AND down_ont.report_id = unknown_prev_up.report_id) OR 1=0
+        GROUP BY down_ont.report_id, down_ont.district, unknown_prev_up.unkwn_up
+        HAVING report_id = ?
+      ), total_ont_up AS
+      (
+        SELECT
+          comb_down_up_unkwn.report_id,
+          comb_down_up_unkwn.district,
+          comb_down_up_unkwn.down,
+          comb_down_up_unkwn.operational,
+          comb_down_up_unkwn.unknown_up,
+          (comb_down_up_unkwn.operational+comb_down_up_unkwn.unknown_up) AS TOTAL_UP
+        FROM comb_down_up_unkwn
+        GROUP BY comb_down_up_unkwn.report_id, comb_down_up_unkwn.district, comb_down_up_unkwn.unknown_up
+        HAVING report_id = ?
+      ), grand_total_ont AS
+      (
+        SELECT
+          total_ont_up.report_id,
+          total_ont_up.district,
+          total_ont_up.down,
+          total_ont_up.operational,
+          total_ont_up.unknown_up,
+          total_ont_up.total_up,
+          (total_ont_up.down + total_ont_up.total_up) AS grand_total
+        FROM total_ont_up
+        GROUP BY total_ont_up.report_id, total_ont_up.district, total_ont_up.unknown_up
+        HAVING report_id = ?
+      ), perc_ont_up AS
+      (
+        SELECT
+          grand_total_ont.report_id,
+          grand_total_ont.district,
+          grand_total_ont.down,
+          grand_total_ont.operational,
+          grand_total_ont.unknown_up,
+          grand_total_ont.total_up,
+          grand_total_ont.grand_total,
+          ROUND(((grand_total_ont.total_up / grand_total_ont.grand_total) * 100),2) AS PERC_UP
+        FROM grand_total_ont
+        GROUP BY grand_total_ont.report_id, grand_total_ont.district, grand_total_ont.unknown_up
+        HAVING report_id = ?
+      ) SELECT
+        perc_ont_up.district,
+        perc_ont_up.down,
+        perc_ont_up.operational,
+        perc_ont_up.unknown_up,
+        perc_ont_up.total_up,
+        perc_ont_up.grand_total,
+        perc_ont_up.perc_up
+      FROM perc_ont_up;`;
 
     let resGenOntStatus;
     const splitId = reportId.split('$');
     const reportType = splitId[0];
     splitId[0] = 'ont-net-provider';
-    const srcReportId = splitId.join('$');
-    const srcReportExists = await chkReportExists(srcReportId);
+    const srcReportId1 = splitId.join('$');
+    const splitId2 = splitId;
+    splitId2[1] = splitId2[1].replace(
+      /(\d{4})-(\d{2})-(\d{2})/,
+      (match, year, month, day) => {
+        const previousDay = parseInt(day, 10) - 1;
+        return `${year}-${month}-${previousDay.toString().padStart(2, '0')}`;
+      }
+    );
+    const srcReportId2 = splitId2.join('$');
+    const srcReportExists = await chkReportExists(srcReportId1);
     if (!srcReportExists) {
       return [
         404,
@@ -681,10 +783,14 @@ const reportOps = async (db) => {
     }
     try {
       [resGenOntStatus] = await db.query(genOntStatusQuery, [
-        srcReportId,
-        srcReportId,
-        srcReportId,
-        srcReportId,
+        srcReportId1,
+        srcReportId1,
+        srcReportId2,
+        srcReportId1,
+        srcReportId1,
+        srcReportId1,
+        srcReportId1,
+        srcReportId1,
       ]);
     } catch (err) {
       console.error('Could not generate the report from the database.', err);
