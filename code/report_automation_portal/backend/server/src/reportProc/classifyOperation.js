@@ -64,14 +64,6 @@ const classifyOperation = async (
         reportLoc = 'ont_status';
         retVal = await reportFunc.fetchReport(reportType, reportLoc, reportId);
         break;
-      case 'mark-for-del':
-        reportLoc = 'mark_for_del';
-        retVal = await reportFunc.fetchReport(reportType, reportLoc, reportId);
-        break;
-      case 'loc-config-pending':
-        reportLoc = 'loc_config_pending';
-        retVal = await reportFunc.fetchReport(reportType, reportLoc, reportId);
-        break;
       default:
         retVal = [404, { message: 'The report type does not exist.' }];
     }
@@ -82,12 +74,6 @@ const classifyOperation = async (
         break;
       case 'ont-status':
         retVal = await reportFunc.genOntStatus(reportId);
-        break;
-      case 'mark-for-del':
-        retVal = await reportFunc.genMarkDel(reportId);
-        break;
-      case 'loc-config-pending':
-        retVal = await reportFunc.genLocConfigPending(reportId);
         break;
       default:
         retVal = [404, { message: 'The report type does not exist.' }];

@@ -414,14 +414,6 @@ const reportArr = {
       'percent_ont_up',
     ],
   },
-  'mark-for-del': {
-    headers: ['NE NAME', 'DISTRICT', 'COUNT OF PANCHAYAT'],
-    columns: ['report_id', 'ne_name', 'district', 'count_panchayat'],
-  },
-  'loc-config-pending': {
-    headers: ['NE NAME', 'DISTRICT', 'COUNT OF ONT LOCATION'],
-    columns: ['ne_name', 'district', 'count_ont_loc'],
-  },
 };
 
 export default reportArr;
