@@ -6,7 +6,6 @@ import './App.css';
 import Login from './Components/Login.jsx';
 import Dashboard from './Components/Dashboard.jsx';
 import AddReport from './Components/AddReport.jsx';
-import EditReport from './Components/EditReport.jsx';
 import GenerateReport from './Components/GenerateReport.jsx';
 import ManageUsers from './Components/ManageUsers.jsx';
 import ChangePassword from './Components/ChangePassword.jsx';
@@ -41,7 +40,6 @@ function App() {
             <Route element={<RequireAuth allowedRoles={['Admin']} />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/addreport" element={<AddReport />} />
-              <Route path="/editreport" element={<EditReport />} />
               <Route path="/generatereport" element={<GenerateReport />} />
               <Route path="/manageusers" element={<ManageUsers />} />
               <Route path="/changepassword" element={<ChangePassword />} />
@@ -50,7 +48,6 @@ function App() {
             <Route element={<RequireAuth allowedRoles={['Uploading']} />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/addreport" element={<AddReport />} />
-              <Route path="/editreport" element={<EditReport />} />
               <Route path="/generatereport" element={<GenerateReport />} />
               <Route path="/changepassword" element={<ChangePassword />} />
             </Route>

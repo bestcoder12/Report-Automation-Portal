@@ -4,7 +4,7 @@ const getReportFile = async (fileData) => {
   let res;
   const config = {
     method: 'get',
-    url: 'http://localhost:8080/report/download-report',
+    url: 'http://localhost:8080/reports/download-report',
     responseType: 'blob',
     params: fileData,
   };

@@ -6,7 +6,6 @@ const classifyOperation = async (
   reportFunc
 ) => {
   let retVal;
-  console.log(reportType);
   if (opType === 'store') {
     switch (reportType) {
       case 'olt-monthly':
@@ -54,6 +53,8 @@ const classifyOperation = async (
         retVal = await reportFunc.fetchReport(reportType, reportLoc, reportId);
         break;
       case 'mismatch-ont':
+        reportLoc = 'mismatch_ont';
+        retVal = await reportFunc.fetchReport(reportType, reportLoc, reportId);
         break;
       case 'olt-status':
         reportLoc = 'olt_status';

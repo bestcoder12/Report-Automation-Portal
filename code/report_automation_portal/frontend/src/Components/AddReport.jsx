@@ -13,6 +13,10 @@ export default function AddReport() {
   const reportOptions = [
     { label: 'OLT Monthly', value: 'olt-monthly' },
     { label: 'OLT Network Provider', value: 'olt-net-provider' },
+    { label: 'ONT Ticket', value: 'ont-ticket' },
+    { label: 'Unknown ONT', value: 'unknown-ont' },
+    { label: 'ONT Network Provider', value: 'ont-net-provider' },
+    { label: 'Mismatch ONT', value: 'mismatch-ont' },
   ];
   const [reportType, setReportType] = useState(reportOptions[0].value);
 

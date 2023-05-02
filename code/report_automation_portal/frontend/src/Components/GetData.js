@@ -13,6 +13,7 @@ const getReportData = async (fileData) => {
   let res;
   try {
     res = await axios(config);
+    console.log(res);
     return { statusCode: res.status, data: res.data };
   } catch (err) {
     console.error('Could not get data from server.');

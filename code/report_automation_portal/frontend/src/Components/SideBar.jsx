@@ -20,7 +20,7 @@ export default function ResSideBar() {
 
   const value = useContext(UserContext);
   const navigate = useNavigate();
-  const { currentUser, setCurrentUser, setUserType } = value;
+  const { currentUser, setCurrentUser, userType, setUserType } = value;
 
   const userLogout = async (e) => {
     e.preventDefault();
@@ -64,22 +64,16 @@ export default function ResSideBar() {
             className="sidebar-link sidebar-icon .sidebar-link:hover"
             style={{ backgroundColor: '#b7cdfb' }}
           >
-            <MenuItem
-              icon={<HiIcons.HiDocumentArrowUp />}
-              component={<Link to="/addreport" />}
-              className="sidebar-link sidebar-icon .sidebar-link:hover"
-              style={{ backgroundColor: '#b7cdfb' }}
-            >
-              Add Report
-            </MenuItem>
-            <MenuItem
-              icon={<MdIcons.MdEditDocument />}
-              component={<Link to="/editreport" />}
-              className="sdebar-link sidebar-icon .sidebar-link:hover"
-              style={{ backgroundColor: '#b7cdfb' }}
-            >
-              Edit Report
-            </MenuItem>
+            {!userType.includes('Regular') && (
+              <MenuItem
+                icon={<HiIcons.HiDocumentArrowUp />}
+                component={<Link to="/addreport" />}
+                className="sidebar-link sidebar-icon .sidebar-link:hover"
+                style={{ backgroundColor: '#b7cdfb' }}
+              >
+                Add Report
+              </MenuItem>
+            )}
             <MenuItem
               icon={<HiIcons.HiDocumentArrowUp />}
               component={<Link to="/generatereport" />}
@@ -89,13 +83,15 @@ export default function ResSideBar() {
               Generate Report
             </MenuItem>
           </SubMenu>
-          <MenuItem
-            icon={<FaIcons.FaUsersCog />}
-            component={<Link to="/manageusers" />}
-            className="sidebar-link sidebar-icon .sidebar-link:hover"
-          >
-            Manage Users
-          </MenuItem>
+          {userType.includes('Admin') && (
+            <MenuItem
+              icon={<FaIcons.FaUsersCog />}
+              component={<Link to="/manageusers" />}
+              className="sidebar-link sidebar-icon .sidebar-link:hover"
+            >
+              Manage Users
+            </MenuItem>
+          )}
           <MenuItem
             icon={<MdIcons.MdPassword />}
             component={<Link to="/changepassword" />}

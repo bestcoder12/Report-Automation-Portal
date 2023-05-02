@@ -3,6 +3,8 @@ import session from 'express-session';
 import express from 'express';
 import multer from 'multer';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import validatePass from './auth/validatePass.js';
 import chkCleanFile from './reportProc/chkCleanFile.js';
 import { sessionStore } from '../middleware/database.js';
@@ -328,7 +330,6 @@ const makeApp = async (userFunc, reportFunc) => {
           }
         }
       }
-      console.log(upldSts, upldMesg);
       res.status(upldSts).json(upldMesg);
     }
   );
@@ -431,8 +432,36 @@ const makeApp = async (userFunc, reportFunc) => {
     res.status(genSts).json(genMesg);
   });
 
-  app.get('/reports/download-report', (req, res) => {
-    const filePath = `./uploads/report_${req.query.type}_${req.query.date}_${req.query.sesn}.xlsx`;
+  app.get('/reports/download-report', async (req, res) => {
+    let reportId;
+    try {
+      reportId = await reportFunc.getReportId(
+        req.query.type,
+        req.query.date,
+        req.query.sessn
+      );
+    } catch (err) {
+      console.error('Could not get reportId.', err);
+    }
+    let resReportExists;
+    try {
+      resReportExists = await reportFunc.chkReportExists(reportId);
+    } catch (err) {
+      console.error('Could not check existence of report.', err);
+    }
+    if (!resReportExists) {
+      res.status(404).json({ message: 'The report requested does not exist' });
+    }
+    // eslint-disable-next-line no-underscore-dangle
+    const __filename = fileURLToPath(import.meta.url);
+    // eslint-disable-next-line no-underscore-dangle
+    const __dirname = path.dirname(__filename);
+    const filePath = path.join(
+      __dirname,
+      '../uploads/',
+      `report_${req.query.type}_${req.query.date}_${req.query.sessn}.xlsx`
+    );
+    console.log(filePath);
     res.sendFile(filePath);
   });
 

@@ -113,18 +113,31 @@ const reportOps = async (db) => {
 
   const convertDate = async (dateStr) => {
     if (!dateStr || dateStr === '--' || dateStr === 'NULL') return null;
-    const dateParts = dateStr.split('-');
-    const timeParts = dateParts[2].split(' ')[1].split(':');
-    [dateParts[2]] = dateParts[2].split(' ');
-    // month is 0-based, that's why we need dataParts[1] - 1
-    const storeDate = new Date(
-      +dateParts[2],
-      dateParts[1] - 1,
-      +dateParts[0],
-      timeParts[0],
-      timeParts[1],
-      timeParts[2]
-    )
+    if (typeof dateStr === 'number') {
+      const serialExcelDate = dateStr;
+      const excelDate = new Date((serialExcelDate - 25569) * 86400000)
+        .toISOString()
+        .slice(0, 19)
+        .replace('T', ' ');
+      return excelDate;
+    }
+    const parts = dateStr.split(' ');
+    const dateDelimiter = dateStr.indexOf('/') !== -1 ? '/' : '-';
+    const dateFormat = dateDelimiter === '-' ? 'DD-MM-YYYY' : 'DD/MM/YYYY';
+    let year;
+    let month;
+    let day;
+    if (dateFormat === 'DD-MM-YYYY') {
+      [day, month, year] = parts[0].split('-');
+    } else {
+      [day, month, year] = parts[0].split('/');
+    }
+    const timeParts = parts.length > 1 ? parts[1].split(':') : [0, 0, 0];
+
+    const hours = parseInt(timeParts[0], 10);
+    const minutes = parseInt(timeParts[1], 10);
+    const seconds = parseInt(timeParts[2], 10);
+    const storeDate = new Date(year, month - 1, day, hours, minutes, seconds)
       .toISOString()
       .slice(0, 19)
       .replace('T', ' ');
@@ -215,11 +228,11 @@ const reportOps = async (db) => {
     let retVal;
     const actData = getJsonFromXLSX(reportFile.path, reportHeaders);
     const storeOntNetQuery =
-      'INSERT INTO olt_net_provider VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+      'INSERT INTO ont_net_provider VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
     await Promise.all(
       actData.map(async (rowData) => {
         let resOntNetQuery;
-        const gpCode = await getGPCode(rowData.panchayat, rowData.BLOCK);
+        const gpCode = await getGPCode(rowData.PANCHAYAT, rowData.BLOCK);
         let resRowData;
         if (gpCode !== undefined) {
           let dateRowData;
@@ -229,7 +242,11 @@ const reportOps = async (db) => {
           await Promise.all(
             dateCols.map(async (dateKey) => {
               resRowData = rowData;
-              dateRowData = await convertDate(rowData[dateKey]);
+              try {
+                dateRowData = await convertDate(rowData[dateKey]);
+              } catch (error) {
+                console.log(rowData[dateKey]);
+              }
               resRowData[dateKey] = dateRowData;
             })
           );
@@ -239,9 +256,8 @@ const reportOps = async (db) => {
               [reportId, gpCode.gp_code].concat(Object.values(resRowData))
             );
           } catch (err) {
-            console.erron('Could not add row to the database.', err);
+            console.error('Could not add row to the database.', err);
           }
-
           if (resOntNetQuery.affectedRows !== [1]) {
             retVal = [
               500,
@@ -260,7 +276,7 @@ const reportOps = async (db) => {
     let retVal;
     const actData = getJsonFromXLSX(reportFile.path, reportHeaders);
     const storeOntTicketQuery =
-      'INSERT INTO ont_ticket VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+      'INSERT INTO ont_ticket VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
     await Promise.all(
       actData.map(async (rowData) => {
         let resOntTicketQuery;
@@ -350,7 +366,7 @@ const reportOps = async (db) => {
     let retVal;
     const actData = getJsonFromXLSX(reportFile.path, reportHeaders);
     const storeMismtchOntQuery =
-      'INSERT INTO olt_ticket VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
+      'INSERT INTO mismatch_ont VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);';
     await Promise.all(
       actData.map(async (rowData) => {
         let resMismtchOntQuery;
