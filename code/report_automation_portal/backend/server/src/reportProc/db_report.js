@@ -762,7 +762,7 @@ const reportOps = async (db) => {
     const reportType = splitId[0];
     splitId[0] = 'ont-net-provider';
     const srcReportId1 = splitId.join('$');
-    const splitId2 = splitId;
+    const splitId2 = [...splitId];
     splitId2[1] = splitId2[1].replace(
       /(\d{4})-(\d{2})-(\d{2})/,
       (match, year, month, day) => {
