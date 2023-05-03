@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
-import db from '../middleware/database.js';
-import userOps from '../middleware/db_user.js';
-import reportOps from './reportProc/db_report.js';
+import db from './middleware/database.js';
+import userOps from './services/user_management/db_user.js';
+import reportOps from './services/report_proc/db_report.js';
 import makeApp from './app.js';
 
 dotenv.config();

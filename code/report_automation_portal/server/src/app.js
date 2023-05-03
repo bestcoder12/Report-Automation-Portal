@@ -1,14 +1,13 @@
 import * as dotenv from 'dotenv';
-import session from 'express-session';
 import express from 'express';
 import multer from 'multer';
-import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import validatePass from './auth/validatePass.js';
-import chkCleanFile from './reportProc/chkCleanFile.js';
-import { sessionStore } from '../middleware/database.js';
-import classifyOperation from './reportProc/classifyOperation.js';
+import sessionMiddleware from './middleware/sessionMiddleware.js';
+import corsMiddleware from './middleware/corsMiddleware.js';
+import validatePass from './controllers/user_management/validatePass.js';
+import chkCleanFile from './controllers/report_proc/chkCleanFile.js';
+import classifyOperation from './controllers/report_proc/classifyOperation.js';
 
 dotenv.config();
 
@@ -16,32 +15,9 @@ const makeApp = async (userFunc, reportFunc) => {
   const app = express();
   app.use(express.json());
 
-  app.use(
-    session({
-      key: process.env.SESSION_KEY,
-      secret: process.env.SESSION_SECRET,
-      store: sessionStore,
-      resave: false,
-      saveUninitialized: false,
-      name: process.env.COOKIE_NAME,
-      cookie: {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: false,
-        maxAge: 3600000,
-      },
-    })
-  );
+  sessionMiddleware(app);
 
-  app.use(
-    cors({
-      origin: 'http://localhost:3000',
-      methods: 'GET,PUT,POST,DELETE',
-      preflightContinue: false,
-      optionsSuccessStatus: 204,
-      credentials: true,
-    })
-  );
+  corsMiddleware(app);
 
   const storage = multer.diskStorage({
     destination: 'uploads/',
