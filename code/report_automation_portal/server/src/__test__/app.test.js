@@ -2,8 +2,8 @@
 import { jest } from '@jest/globals';
 import request from 'supertest';
 import makeApp from '../app.js';
-import userOps from '../../middleware/db_user.js';
-import reportOps from '../reportProc/db_report.js';
+import userOps from '../services/user_management/db_user.js';
+import reportOps from '../services/report_proc/db_report.js';
 import testData from './appTestData';
 
 let dataArr;
