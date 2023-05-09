@@ -21,7 +21,8 @@ The reports it currently processes as outputs, are
 - OLT-Status
 - ONT-Status
 
-* Note: The code does not include .env file for the required environment variables.
-It has to be added separately as per system configuration *
+
+*Note: The code does not include .env file for the required environment variables.
+It has to be added separately as per system configuration*
 
 The coding style followed in this project is that of Airbnb style of javascript and prettier for code formatting.
