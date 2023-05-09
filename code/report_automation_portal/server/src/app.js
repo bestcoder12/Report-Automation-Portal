@@ -4,7 +4,8 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sessionMiddleware from './middleware/sessionMiddleware.js';
-import corsMiddleware from './middleware/corsMiddleware.js';
+// import corsMiddleware from './middleware/corsMiddleware.js';
+import buildMiddleware from './middleware/buildMiddleware.js';
 import validatePass from './controllers/user_management/validatePass.js';
 import chkCleanFile from './controllers/report_proc/chkCleanFile.js';
 import classifyOperation from './controllers/report_proc/classifyOperation.js';
@@ -17,7 +18,7 @@ const makeApp = async (userFunc, reportFunc) => {
 
   sessionMiddleware(app);
 
-  corsMiddleware(app);
+  // corsMiddleware(app);
 
   const storage = multer.diskStorage({
     destination: 'uploads/',
@@ -439,6 +440,8 @@ const makeApp = async (userFunc, reportFunc) => {
     );
     res.sendFile(filePath);
   });
+
+  buildMiddleware(app);
 
   app.use((err, req, res, next) => {
     console.log(err);
