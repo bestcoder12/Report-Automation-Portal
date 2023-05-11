@@ -10,10 +10,16 @@ const buildMiddleware = (app) => {
   const root = path.join(__dirname, '../../../client/build');
   app.use(express.static(root));
 
-  app.use('/*', (req, res) => {
+  app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../../client/build', 'index.html'));
   });
 
+  app.use((req, res) => {
+    if (!req.path.includes('.')) {
+      res.sendFile(path.join(__dirname, '../../../client/build', 'index.html'));
+    }
+  });
+  
   return app;
 };
 
