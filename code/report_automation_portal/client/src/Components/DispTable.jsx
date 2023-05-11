@@ -21,7 +21,7 @@ export default function DispTable({ columns, data, cssClass }) {
   } = useTable(
     {
       columns,
-      data,
+      data: data || [],
       initialState: { pageIndex: 0 },
     },
     usePagination

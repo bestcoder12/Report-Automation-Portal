@@ -4,7 +4,8 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sessionMiddleware from './middleware/sessionMiddleware.js';
-import corsMiddleware from './middleware/corsMiddleware.js';
+// import corsMiddleware from './middleware/corsMiddleware.js';
+import buildMiddleware from './middleware/buildMiddleware.js';
 import validatePass from './controllers/user_management/validatePass.js';
 import chkCleanFile from './controllers/report_proc/chkCleanFile.js';
 import classifyOperation from './controllers/report_proc/classifyOperation.js';
@@ -17,7 +18,7 @@ const makeApp = async (userFunc, reportFunc) => {
 
   sessionMiddleware(app);
 
-  corsMiddleware(app);
+  // corsMiddleware(app);
 
   const storage = multer.diskStorage({
     destination: 'uploads/',
@@ -223,14 +224,13 @@ const makeApp = async (userFunc, reportFunc) => {
     res.status(delSts).json(delMesg);
   });
 
-  app.get('/users/logout', async (req, res, next) => {
+  app.get('/users/logout', async (req, res) => {
     req.session.username = null;
     req.session.utype = null;
     req.session.validSession = false;
     const ssId = req.sessionID;
     req.session.destroy(ssId);
     res.status(200).send({ message: 'Logged out successfully' });
-    next();
   });
 
   app.post(
@@ -427,18 +427,21 @@ const makeApp = async (userFunc, reportFunc) => {
     }
     if (!resReportExists) {
       res.status(404).json({ message: 'The report requested does not exist' });
+    } else {
+      // eslint-disable-next-line no-underscore-dangle
+      const __filename = fileURLToPath(import.meta.url);
+      // eslint-disable-next-line no-underscore-dangle
+      const __dirname = path.dirname(__filename);
+      const filePath = path.join(
+        __dirname,
+        '../uploads/',
+        `report_${req.query.type}_${req.query.date}_${req.query.sessn}.xlsx`
+      );
+      res.sendFile(filePath);
     }
-    // eslint-disable-next-line no-underscore-dangle
-    const __filename = fileURLToPath(import.meta.url);
-    // eslint-disable-next-line no-underscore-dangle
-    const __dirname = path.dirname(__filename);
-    const filePath = path.join(
-      __dirname,
-      '../uploads/',
-      `report_${req.query.type}_${req.query.date}_${req.query.sessn}.xlsx`
-    );
-    res.sendFile(filePath);
   });
+
+  buildMiddleware(app);
 
   app.use((err, req, res, next) => {
     console.log(err);
